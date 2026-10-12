@@ -1,0 +1,73 @@
+# Controlador de Ingress (ADR-0005). Chart upstream con versión fijada; la versión debe coincidir
+# con TRAEFIK_CHART_VERSION de versions.env (lo comprueba `make check`).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+spec:
+  project: platform
+  source:
+    repoURL: https://traefik.github.io/charts
+    chart: traefik
+    targetRevision: 41.7.1
+    helm:
+      # Solo se usa el proveedor de Ingress estándar: las CRDs de Traefik y de Traefik Hub no hacen falta.
+      skipCrds: true
+      valuesObject:
+        deployment:
+          replicas: 1
+        # Nodo que publica los puertos 80/443 en 127.0.0.1 del host (infra/terraform/cluster).
+        nodeSelector:
+          ingress-ready: "true"
+        tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+        ports:
+          web:
+            hostPort: 80
+          websecure:
+            hostPort: 443
+        # Con hostPort en un único nodo, el pod nuevo no arranca hasta que se libera el puerto:
+        # se sustituye el pod en lugar de crear uno adicional.
+        updateStrategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxUnavailable: 1
+            maxSurge: 0
+        # kind no tiene balanceador: un Service LoadBalancer quedaría pendiente indefinidamente.
+        service:
+          spec:
+            type: ClusterIP
+        ingressClass:
+          enabled: true
+          isDefaultClass: true
+        providers:
+          kubernetesCRD:
+            enabled: false
+          kubernetesIngress:
+            enabled: true
+            # Dirección publicada en el estado de los Ingress (sin ella Argo CD los ve "Progressing").
+            publishedService:
+              enabled: false
+            ingressEndpoint:
+              ip: 127.0.0.1
+        gateway:
+          enabled: false
+        gatewayClass:
+          enabled: false
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,57 @@
+# Valores del chart argocd-apps (plantilla de Terraform): AppProjects y Application raíz.
+# Es lo único que Terraform entrega a Argo CD; el resto se declara en gitops/ (ADR-0003, ADR-0004).
+
+projects:
+  # Componentes de plataforma: solo los administra el equipo de plataforma (O7).
+  platform:
+    namespace: ${namespace}
+    description: Componentes de plataforma (app-of-apps de gitops/platform)
+    sourceRepos:
+      - ${gitops_repo_url}
+      # Charts upstream de los componentes. Se añade uno por componente en su fase.
+      - https://traefik.github.io/charts
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: "*"
+    clusterResourceWhitelist:
+      - group: "*"
+        kind: "*"
+
+  # Servicios de los equipos (ApplicationSet, S6): solo en los namespaces de entorno, sin recursos
+  # de ámbito de clúster y sin poder alterar las cuotas del entorno.
+  services:
+    namespace: ${namespace}
+    description: Servicios desplegados en apps-dev y apps-staging (gitops/apps)
+    sourceRepos:
+      - ${gitops_repo_url}
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: apps-dev
+      - server: https://kubernetes.default.svc
+        namespace: apps-staging
+    clusterResourceWhitelist: []
+    namespaceResourceBlacklist:
+      - group: ""
+        kind: ResourceQuota
+      - group: ""
+        kind: LimitRange
+      - group: networking.k8s.io
+        kind: NetworkPolicy
+
+applications:
+  # App-of-apps: cada fichero de gitops/platform/apps es una Application de plataforma.
+  # Sin finalizador de borrado en cascada: eliminar la raíz no desinstala la plataforma.
+  root:
+    namespace: ${namespace}
+    project: platform
+    source:
+      repoURL: ${gitops_repo_url}
+      targetRevision: ${gitops_revision}
+      path: gitops/platform/apps
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: ${namespace}
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true

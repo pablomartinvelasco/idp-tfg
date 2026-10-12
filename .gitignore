@@ -6,10 +6,10 @@
 secrets/
 
 # Binarios de herramientas descargados por scripts/install-tools.sh
-.tools/
+.tools
 
 # kubeconfig del laboratorio (contiene credenciales de cliente del clúster)
-.kube/
+.kube
 
 # Terraform
 **/.terraform/*

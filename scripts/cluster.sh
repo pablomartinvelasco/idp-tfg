@@ -26,6 +26,8 @@ case "${1:-}" in
     log "terraform destroy: se eliminará el clúster '${LAB_CLUSTER_NAME}' y todo su contenido"
     tf init -input=false >/dev/null
     tf destroy -input=false -auto-approve
+    # Los releases de la etapa bootstrap desaparecen con el clúster: su estado ya no describe nada.
+    rm -f "${REPO_ROOT}"/infra/terraform/bootstrap/terraform.tfstate{,.backup}
     ;;
   status)
     if kind get clusters 2>/dev/null | grep -qx "${LAB_CLUSTER_NAME}"; then

@@ -5,7 +5,7 @@ SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 SCRIPTS := ./scripts
 
-.PHONY: help tools preflight check up plan down status namespaces verify kubeconfig
+.PHONY: help tools preflight check up bootstrap plan down status verify argocd-password kubeconfig
 
 help: ## Muestra esta ayuda
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  \033[1m%-12s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -19,21 +19,26 @@ preflight: ## Comprueba requisitos del host (Docker, memoria, puertos)
 check: ## Verificaciones estáticas: shellcheck, terraform validate, kustomize, secretos
 	@$(SCRIPTS)/check.sh
 
-plan: ## terraform plan del clúster
+plan: ## terraform plan de las dos etapas (clúster y bootstrap)
 	@$(SCRIPTS)/cluster.sh plan
+	@$(SCRIPTS)/bootstrap.sh plan
 
-up: ## Crea el clúster kind y aplica los namespaces de entorno
+up: ## Crea el clúster e instala Argo CD, que despliega la plataforma desde Git
 	@$(SCRIPTS)/cluster.sh up
-	@$(MAKE) --no-print-directory namespaces
+	@$(SCRIPTS)/bootstrap.sh up
 
-namespaces: ## Aplica gitops/platform/namespaces (transitorio hasta que Argo CD lo gestione, S5)
-	@source $(SCRIPTS)/lib.sh && kc apply -k gitops/platform/namespaces
+bootstrap: ## Instala o actualiza Argo CD y la Application raíz (etapa 2, ADR-0003)
+	@$(SCRIPTS)/bootstrap.sh up
 
-verify: ## Verificación funcional del clúster (PA-01, PA-02)
+verify: ## Verificación funcional: clúster (PA-01, PA-02) y plataforma GitOps
 	@$(SCRIPTS)/verify-cluster.sh
+	@$(SCRIPTS)/verify-platform.sh
 
 status: ## Estado del clúster
 	@$(SCRIPTS)/cluster.sh status
+
+argocd-password: ## Muestra la contraseña inicial del usuario admin de Argo CD
+	@$(SCRIPTS)/bootstrap.sh password
 
 kubeconfig: ## Imprime el export de KUBECONFIG para usar kubectl en la shell actual
 	@source $(SCRIPTS)/lib.sh && echo "export KUBECONFIG=$$KUBECONFIG"

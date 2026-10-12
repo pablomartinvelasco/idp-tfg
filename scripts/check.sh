@@ -28,6 +28,11 @@ while IFS= read -r kfile; do
   run "${dir#"${REPO_ROOT}"/}: kustomize build" kubectl kustomize "${dir}"
 done < <(find "${REPO_ROOT}/gitops" -name kustomization.yaml)
 
+log "Versiones (versions.env como fuente única)"
+traefik_app="${REPO_ROOT}/gitops/platform/apps/traefik.yaml"
+run "chart de Traefik en GitOps = TRAEFIK_CHART_VERSION (${TRAEFIK_CHART_VERSION})" \
+  grep -qE "^    targetRevision: ${TRAEFIK_CHART_VERSION//./\\.}\$" "${traefik_app}"
+
 log "Secretos (RNF-04)"
 run ".env no versionado" bash -c "! git -C '${REPO_ROOT}' ls-files --error-unmatch .env"
 run "sin patrones de credenciales en ficheros versionables" bash -c \
