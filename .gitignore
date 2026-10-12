@@ -1,0 +1,36 @@
+# Secretos y configuración local (RNF-04)
+.env
+*.env.local
+*.pem
+*.key
+secrets/
+
+# Binarios de herramientas descargados por scripts/install-tools.sh
+.tools/
+
+# kubeconfig del laboratorio (contiene credenciales de cliente del clúster)
+.kube/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Node / Backstage (fases posteriores)
+node_modules/
+dist/
+dist-types/
+
+# Sistema
+.DS_Store
+*.swp
