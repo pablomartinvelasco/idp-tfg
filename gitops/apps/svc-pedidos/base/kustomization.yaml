@@ -8,8 +8,10 @@ labels:
       # Permite al plugin de Kubernetes de Backstage localizar los recursos del componente.
       backstage.io/kubernetes-id: svc-pedidos
     includeSelectors: true
+  # También en los pods (sin tocar los selectores): útil para filtrar métricas y listados.
   - pairs:
       app.kubernetes.io/part-of: tienda-demo
+    includeTemplates: true
 resources:
   - deployment.yaml
   - service.yaml

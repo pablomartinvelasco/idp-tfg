@@ -8,6 +8,7 @@ resources:
 labels:
   - pairs:
       idp.tfg/environment: staging
+    includeTemplates: true
 replicas:
   - name: svc-pedidos
     count: 2
