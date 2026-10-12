@@ -28,6 +28,16 @@ while IFS= read -r kfile; do
   run "${dir#"${REPO_ROOT}"/}: kustomize build" kubectl kustomize "${dir}"
 done < <(find "${REPO_ROOT}/gitops" -name kustomization.yaml)
 
+log "Servicios (gitops/apps, ADR-0004)"
+shopt -s nullglob
+for overlay in "${REPO_ROOT}"/gitops/apps/*/overlays/*/; do
+  rel="${overlay#"${REPO_ROOT}"/}"
+  run "${rel%/}: entorno dev o staging" bash -c "[[ '$(basename "${overlay}")' =~ ^(dev|staging)$ ]]"
+  run "${rel%/}: imagen fijada por SHA de commit (40 hex)" \
+    grep -qE '^ *newTag: *[0-9a-f]{40} *$' "${overlay}kustomization.yaml"
+done
+shopt -u nullglob
+
 log "Versiones (versions.env como fuente única)"
 traefik_app="${REPO_ROOT}/gitops/platform/apps/traefik.yaml"
 run "chart de Traefik en GitOps = TRAEFIK_CHART_VERSION (${TRAEFIK_CHART_VERSION})" \

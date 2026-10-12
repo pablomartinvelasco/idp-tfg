@@ -1,0 +1,31 @@
+# svc-pedidos en staging. Argo CD genera la Application svc-pedidos-staging (ApplicationSet "services").
+# Promoción: PR que cambia newTag por el SHA ya validado en dev.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: apps-staging
+resources:
+  - ../../base
+labels:
+  - pairs:
+      idp.tfg/environment: staging
+replicas:
+  - name: svc-pedidos
+    count: 2
+images:
+  - name: ghcr.io/pablomartinvelasco/svc-pedidos
+    newTag: 38196b831786108b0746df75020e47b7cd80e09c
+patches:
+  - target:
+      kind: Deployment
+      name: svc-pedidos
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0
+        value: {name: APP_ENV, value: staging}
+  - target:
+      kind: Ingress
+      name: svc-pedidos
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: svc-pedidos.staging.localtest.me

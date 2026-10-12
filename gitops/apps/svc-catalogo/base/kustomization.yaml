@@ -1,0 +1,16 @@
+# Despliegue común de svc-catalogo (código: github.com/pablomartinvelasco/svc-catalogo).
+# Los overlays fijan entorno, réplicas, hostname y etiqueta de imagen (ADR-0004).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - pairs:
+      app.kubernetes.io/name: svc-catalogo
+      # Permite al plugin de Kubernetes de Backstage localizar los recursos del componente.
+      backstage.io/kubernetes-id: svc-catalogo
+    includeSelectors: true
+  - pairs:
+      app.kubernetes.io/part-of: tienda-demo
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml

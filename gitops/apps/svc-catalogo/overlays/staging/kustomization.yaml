@@ -1,0 +1,31 @@
+# svc-catalogo en staging. Argo CD genera la Application svc-catalogo-staging (ApplicationSet "services").
+# Promoción: PR que cambia newTag por el SHA ya validado en dev.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: apps-staging
+resources:
+  - ../../base
+labels:
+  - pairs:
+      idp.tfg/environment: staging
+replicas:
+  - name: svc-catalogo
+    count: 2
+images:
+  - name: ghcr.io/pablomartinvelasco/svc-catalogo
+    newTag: 70363c4cd0e76fdea1272e22e5aff79bd9a32361
+patches:
+  - target:
+      kind: Deployment
+      name: svc-catalogo
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0
+        value: {name: APP_ENV, value: staging}
+  - target:
+      kind: Ingress
+      name: svc-catalogo
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: svc-catalogo.staging.localtest.me

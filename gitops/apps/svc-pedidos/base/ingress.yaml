@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: svc-pedidos
+spec:
+  ingressClassName: traefik
+  rules:
+    # El hostname definitivo (<svc>.<entorno>.localtest.me) lo fija cada overlay.
+    - host: svc-pedidos.localtest.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-pedidos
+                port:
+                  name: http
