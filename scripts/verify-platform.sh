@@ -77,8 +77,11 @@ for overlay in "${REPO_ROOT}"/gitops/apps/*/overlays/*/; do
   resolve="${svc}.${env}.${LAB_DOMAIN}:${LAB_HTTP_PORT}:127.0.0.1"
   check "${app}: ${url%:*}/ informa entorno ${env} y versión ${tag:0:7}" bash -c \
     "curl -fsS --max-time 10 --resolve '${resolve}' '${url}/' | grep -q '\"entorno\":\"${env}\",.*\"version\":\"${tag}\"'"
-  check "${app}: /metrics expone http_requests_total" bash -c \
-    "curl -fsS --max-time 10 --resolve '${resolve}' '${url}/metrics' | grep -q '^http_requests_total'"
+  # app_build_info existe en todos los pods desde el arranque. http_requests_total no sirve aquí:
+  # el cliente de Prometheus omite un contador con etiquetas hasta su primer uso, y con varias
+  # réplicas el pod que responde puede no haber atendido ninguna petición todavía.
+  check "${app}: /metrics publica app_build_info del entorno y la versión" bash -c \
+    "curl -fsS --max-time 10 --resolve '${resolve}' '${url}/metrics' | grep -qx 'app_build_info{environment=\"${env}\",service=\"${svc}\",version=\"${tag}\"} 1'"
 done
 shopt -u nullglob
 
