@@ -1,6 +1,6 @@
 # Arquitectura de la plataforma (v1)
 
-> Estado: **v1 — S3 (12/10/2026)**. Cubre O1. Las secciones marcadas como *previsto* describen
+> Estado: **v1 — S3 (12/10/2026)**, actualizada en S4 con el bootstrap implementado. Cubre O1. Las secciones marcadas como *previsto* describen
 > diseño aún no implementado; ver `docs/seguimiento.md` para el estado real.
 
 ## 1. Visión general
@@ -78,10 +78,10 @@ flowchart LR
 |---|---|---|---|---|
 | Docker Engine (WSL2) | Ejecuta los nodos kind | Script de host (`scripts/host/`) | — | S3 ✔ |
 | Clúster kind | Kubernetes del laboratorio | Terraform `infra/terraform/cluster` | — | S3 ✔ |
-| Namespaces de entorno | `apps-dev`, `apps-staging` con cuotas y PSA | `gitops/platform/namespaces` (kubectl en S3; Argo CD desde S5) | — | S3 ✔ |
-| Argo CD | Reconciliación GitOps | Terraform `infra/terraform/bootstrap` (Helm) | `argocd` | S5 |
-| App raíz (app-of-apps) | Declara el resto de componentes de plataforma | Terraform (chart `argocd-apps`) | `argocd` | S5 |
-| Traefik | Ingress HTTP(S) hacia el portal y herramientas | Argo CD | `traefik` | S5 |
+| Namespaces de entorno | `apps-dev`, `apps-staging` con cuotas y PSA | Argo CD (Application `env-namespaces` → `gitops/platform/namespaces`; kubectl solo en S3) | — | S4 ✔ |
+| Argo CD | Reconciliación GitOps | Terraform `infra/terraform/bootstrap` (Helm) | `argocd` | S4 ✔ |
+| App raíz (app-of-apps) | Declara el resto de componentes de plataforma | Terraform (chart `argocd-apps`) | `argocd` | S4 ✔ |
+| Traefik | Ingress HTTP(S) hacia el portal y herramientas | Argo CD (Application `traefik`) | `traefik` | S4 ✔ |
 | kube-prometheus-stack | Prometheus, Grafana, kube-state-metrics, node-exporter | Argo CD | `monitoring` | S10 |
 | Backstage + PostgreSQL | Portal, catálogo, plantillas, TechDocs | Argo CD (imagen propia de `portal/`) | `backstage` | S7 |
 | Servicios de ejemplo (2) | Cargas de demostración con `/metrics` | Argo CD (ApplicationSet) | `apps-dev`, `apps-staging` | S6 |
@@ -117,7 +117,7 @@ sequenceDiagram
   A->>TFc: make up
   TFc->>K: kind_cluster (1 nodo, puertos 80/443)
   TFc-->>A: kubeconfig (.kube/idp-lab.yaml)
-  A->>TFb: make bootstrap (S5)
+  A->>TFb: make up (etapa 2) / make bootstrap
   TFb->>K: helm_release argo-cd
   TFb->>K: helm_release argocd-apps (Application "root")
   ACD->>G: lee gitops/platform
@@ -131,6 +131,22 @@ configura con un kubeconfig que ya existe, en lugar de depender de atributos des
 de plan (problema conocido al configurar providers con salidas de recursos del mismo módulo).
 
 Nada en Git necesita Argo CD para existir, y Argo CD solo necesita leer Git: no hay ciclo.
+
+### Implementación (S4)
+
+| Elemento | Detalle |
+|---|---|
+| Releases de Terraform | `argocd` (chart `argo-cd`, Argo CD v3.5) y `argocd-apps`; versiones en `versions.env` |
+| Argo CD | Una réplica por componente, sin Dex ni notificaciones; `server.insecure` (TLS lo terminaría Traefik); interfaz en `http://argocd.localtest.me` |
+| AppProject `platform` | Repositorio de plataforma y charts upstream autorizados; cualquier namespace y recursos de clúster |
+| AppProject `services` | Solo `apps-dev`/`apps-staging`; sin recursos de clúster; no puede modificar `ResourceQuota`, `LimitRange` ni `NetworkPolicy` |
+| Application `root` | `gitops/platform/apps` en la revisión `LAB_GITOPS_REVISION` (por defecto `main`); `prune` + `selfHeal`; sin finalizador en cascada |
+| Applications hijas | `traefik` (chart upstream, `valuesObject` en Git) y `env-namespaces` (Kustomize); los Namespace llevan `Prune=false,Delete=false` para que un cambio en Git no elimine un entorno |
+
+Traefik en kind: `hostPort` 80/443 en el nodo `ingress-ready`, Service `ClusterIP` (kind no tiene
+balanceador), estrategia de despliegue que sustituye el pod (dos pods no pueden compartir el
+`hostPort`), solo el proveedor estándar de `Ingress` (sin CRDs de Traefik ni Gateway API) y
+`ingressEndpoint` 127.0.0.1 para que los `Ingress` tengan estado y Argo CD los considere sanos.
 
 ## 5. Estrategia GitOps (ADR-0004)
 
@@ -156,7 +172,7 @@ Nada en Git necesita Argo CD para existir, y Argo CD solo necesita leer Git: no 
 gitops/
 ├── platform/
 │   ├── namespaces/              # S3 ✔  apps-dev, apps-staging (+ LimitRange, ResourceQuota)
-│   └── apps/                    # S5    Applications de plataforma (app-of-apps)
+│   └── apps/                    # S4 ✔  Applications de plataforma: traefik, env-namespaces
 └── apps/                        # S6    un directorio por servicio
     └── <servicio>/
         ├── base/                # Deployment, Service, Ingress, ServiceMonitor
@@ -231,7 +247,9 @@ a él con las variables del servicio seleccionado.
 
 ## 10. Estimación de recursos
 
-Estimación de diseño, **no medida**; se validará con `kubectl top` al completar cada fase.
+Estimación de diseño; se contrasta con medidas reales al completar cada fase. Medida S4
+(12/10/2026, `docker stats` del nodo): clúster + Argo CD + Traefik = **1,41 GiB**, dentro del rango
+estimado para esos bloques (1,1 – 1,6 GiB).
 
 | Bloque | Memoria estimada |
 |---|---|
@@ -259,6 +277,6 @@ de la PEC1 se respeta permitiendo levantar fases parciales (sin monitorización 
 | R7 | Red de WSL2 (acceso desde el navegador de Windows a `localhost`) | Bajo | Puertos publicados en 127.0.0.1; reenvío de localhost de WSL; documentado en instalación |
 | R8 | Imágenes Bitnami ya no gratuitas en su catálogo público | Bajo | PostgreSQL con imagen oficial `postgres` |
 
-Dependencias entre fases: S5 (Argo CD) requiere el repo publicado en GitHub; S7 (portal) requiere
-S5 para su despliegue; S9 (plantilla) requiere S6 (estructura de `gitops/apps`) y S7; S10 requiere
+Dependencias entre fases: S4 (Argo CD) requiere el repo publicado en GitHub; S7 (portal) requiere
+S4 para su despliegue; S9 (plantilla) requiere S6 (estructura de `gitops/apps`) y S7; S10 requiere
 que los servicios expongan `/metrics` (S6).

@@ -41,16 +41,32 @@ make check        # verificaciones estáticas
 make preflight    # requisitos del host
 ```
 
-## 4. Clúster
+## 4. Clúster y plataforma GitOps
 
 ```bash
-make up           # terraform apply + namespaces de entorno
-make verify       # verificación funcional (PA-01, PA-02)
+make up           # etapa 1: clúster kind · etapa 2: Argo CD + Application raíz
+make verify       # verificación funcional del clúster (PA-01, PA-02) y de la plataforma
 eval "$(make -s kubeconfig)"   # usar kubectl en la shell actual
 ```
 
-`make down` destruye el clúster (pide confirmación).
+`make up` aplica dos *root modules* de Terraform (`infra/terraform/cluster` y
+`infra/terraform/bootstrap`) y espera a que Argo CD sincronice `gitops/platform` desde GitHub
+(Traefik y los namespaces `apps-dev`/`apps-staging`). Argo CD lee el repositorio configurado en
+`LAB_GITOPS_REPO`/`LAB_GITOPS_REVISION` (`.env`; por defecto `main` del repositorio público del
+proyecto), por lo que un cambio en `gitops/` solo se aplica cuando está en esa rama.
+
+`make bootstrap` repite solo la etapa 2 (p. ej., tras cambiar la versión de Argo CD en
+`versions.env`). `make down` destruye el clúster (pide confirmación) y descarta el estado de la
+etapa 2.
+
+## 5. Acceso a Argo CD
+
+- URL: <http://argocd.localtest.me> (desde WSL o desde el navegador de Windows).
+- Usuario `admin`; contraseña inicial: `make argocd-password`.
+
+`*.localtest.me` resuelve a `127.0.0.1` mediante DNS público; sin conexión, añade
+`127.0.0.1 argocd.localtest.me` al fichero hosts (ADR-0005).
 
 ## Pasos siguientes
 
-Argo CD (`make bootstrap`), portal y observabilidad se añadirán a esta guía en las fases S5–S10.
+Servicios de ejemplo, portal y observabilidad se añadirán a esta guía en las fases S6–S10.

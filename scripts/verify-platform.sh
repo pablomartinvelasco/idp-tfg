@@ -55,7 +55,8 @@ host="argocd.${LAB_DOMAIN}"
 # Se fuerza la resolución a 127.0.0.1 para no depender del DNS público en esta comprobación.
 check "http://${host} responde con la interfaz de Argo CD" bash -c \
   "curl -fsS --max-time 10 --resolve '${host}:${LAB_HTTP_PORT}:127.0.0.1' 'http://${host}:${LAB_HTTP_PORT}/' | grep -q '<title>Argo CD</title>'"
-if getent hosts "${host}" | grep -q '127\.0\.0\.1'; then
+# localtest.me publica también ::1, que `getent hosts` devuelve primero: se consulta solo IPv4.
+if getent ahostsv4 "${host}" | grep -q '^127\.0\.0\.1'; then
   ok "${host} resuelve a 127.0.0.1"
 else
   warn "${host} no resuelve a 127.0.0.1 (¿sin DNS público?): ver ADR-0005"

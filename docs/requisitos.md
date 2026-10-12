@@ -67,8 +67,8 @@ Fuente: PEC1 (11/10/2026), apartados 2 y 3. Los identificadores se mantienen en 
 | Objetivo | Requisitos | Casos de uso | Artefactos | Pruebas | Estado |
 |---|---|---|---|---|---|
 | O1 Requisitos y arquitectura | — | todos | `docs/requisitos.md`, `docs/arquitectura.md`, `docs/adr/` | revisión | **Hecho (v1)** |
-| O2 Base reproducible | RF-07, RF-08, RNF-01 | CU-05 | `infra/terraform/cluster`, `scripts/`, `Makefile`, `versions.env` | PA-01, PA-02, PA-12 | En curso (S3–S5) |
-| O3 GitOps | RF-03, RF-04, RNF-02 | CU-03 | `gitops/` | PA-03, PA-04, PA-05 | Namespaces hechos; resto S5–S6 |
+| O2 Base reproducible | RF-07, RF-08, RNF-01 | CU-05 | `infra/terraform/cluster`, `scripts/`, `Makefile`, `versions.env` | PA-01, PA-02, PA-12 | En curso: clúster y bootstrap hechos (S3–S4) |
+| O3 GitOps | RF-03, RF-04, RNF-02 | CU-03 | `gitops/` | PA-03, PA-04, PA-05 | Argo CD, app-of-apps y namespaces por GitOps (S4); servicios en S6 |
 | O4 Portal y catálogo | RF-01, RF-05 | CU-01 | `portal/` | PA-06, PA-07 | S7–S8 |
 | O5 Autoservicio | RF-02 | CU-02 | plantilla Backstage | PA-08 | S9 |
 | O6 Observabilidad | RF-06 | CU-04 | `gitops/platform/apps/monitoring` | PA-09 | S10 |
