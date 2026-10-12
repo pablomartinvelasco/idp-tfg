@@ -1,6 +1,6 @@
 # Arquitectura de la plataforma (v1)
 
-> Estado: **v1 — S3 (12/10/2026)**, actualizada en S4 con el bootstrap implementado. Cubre O1. Las secciones marcadas como *previsto* describen
+> Estado: **v1 — S3 (12/10/2026)**, actualizada en S4 (bootstrap) y S6 (servicios). Cubre O1. Las secciones marcadas como *previsto* describen
 > diseño aún no implementado; ver `docs/seguimiento.md` para el estado real.
 
 ## 1. Visión general
@@ -84,7 +84,7 @@ flowchart LR
 | Traefik | Ingress HTTP(S) hacia el portal y herramientas | Argo CD (Application `traefik`) | `traefik` | S4 ✔ |
 | kube-prometheus-stack | Prometheus, Grafana, kube-state-metrics, node-exporter | Argo CD | `monitoring` | S10 |
 | Backstage + PostgreSQL | Portal, catálogo, plantillas, TechDocs | Argo CD (imagen propia de `portal/`) | `backstage` | S7 |
-| Servicios de ejemplo (2) | Cargas de demostración con `/metrics` | Argo CD (ApplicationSet) | `apps-dev`, `apps-staging` | S6 |
+| Servicios de ejemplo (2) | `svc-catalogo` y `svc-pedidos` (Go) con `/metrics` (ADR-0006) | Argo CD (ApplicationSet `services`) | `apps-dev`, `apps-staging` | S6 ✔ |
 
 ## 3. Propiedad de los recursos (Terraform / Helm / Argo CD)
 
@@ -97,7 +97,7 @@ lo mismo (ADR-0003):
 | 1 · Clúster | Terraform (`cluster`) | `kind_cluster` | `terraform.tfstate` local |
 | 2 · Bootstrap | Terraform (`bootstrap`) + provider Helm | Release `argo-cd`, release `argocd-apps` (app raíz y AppProjects) | `terraform.tfstate` local |
 | 3 · Plataforma | Argo CD (app-of-apps) | Traefik, monitorización, Backstage, namespaces de entorno | Git (`gitops/platform`) |
-| 4 · Servicios | Argo CD (ApplicationSet) | Deployments/Services/Ingress/ServiceMonitor de cada servicio y entorno | Git (`gitops/apps`) |
+| 4 · Servicios | Argo CD (ApplicationSet) | Deployment, Service e Ingress de cada servicio y entorno (ServiceMonitor en S10) | Git (`gitops/apps`) |
 
 Argo CD **no** se gestiona a sí mismo: su versión y configuración las define Terraform. Se descarta
 el patrón *self-managed* porque Terraform y Argo CD se disputarían el mismo release (ADR-0003).
@@ -173,11 +173,24 @@ gitops/
 ├── platform/
 │   ├── namespaces/              # S3 ✔  apps-dev, apps-staging (+ LimitRange, ResourceQuota)
 │   └── apps/                    # S4 ✔  Applications de plataforma: traefik, env-namespaces
-└── apps/                        # S6    un directorio por servicio
+└── apps/                        # S6 ✔  un directorio por servicio (svc-catalogo, svc-pedidos)
     └── <servicio>/
-        ├── base/                # Deployment, Service, Ingress, ServiceMonitor
-        └── overlays/{dev,staging}/
+        ├── base/                # Deployment, Service, Ingress (ServiceMonitor en S10)
+        └── overlays/{dev,staging}/   # namespace, réplicas, APP_ENV, hostname, etiqueta de imagen
 ```
+
+### Servicios (S6)
+
+- El ApplicationSet `services` (en `gitops/platform/apps`) recorre `gitops/apps/*/overlays/*` y
+  genera `<svc>-<entorno>` en el proyecto `services`, con destino `apps-<entorno>` y sincronización
+  automática con `prune` y `selfHeal`. Un overlay que no sea `dev` o `staging` lo rechazan
+  `make check` y el propio AppProject.
+- Las Applications generadas llevan finalizador: retirar el directorio de un servicio elimina sus
+  recursos. Los namespaces de entorno, en cambio, no se borran nunca desde Git.
+- Cada overlay fija la imagen por SHA de commit (`newTag`): promocionar a staging es un PR que
+  cambia esa línea; volver atrás, `git revert`.
+- Los pods llevan `app.kubernetes.io/name`, `app.kubernetes.io/part-of`, `idp.tfg/environment` y
+  `backstage.io/kubernetes-id` (para el plugin de Kubernetes del portal).
 
 ## 6. Separación de entornos
 
@@ -187,7 +200,8 @@ Un único clúster con dos entornos lógicos, tal como acota la PEC1:
 |---|---|---|
 | Namespace | `apps-dev` | `apps-staging` |
 | Overlay Kustomize | `overlays/dev` | `overlays/staging` |
-| Hostname (previsto) | `<svc>.dev.localtest.me` | `<svc>.staging.localtest.me` |
+| Hostname | `<svc>.dev.localtest.me` | `<svc>.staging.localtest.me` |
+| Réplicas de los servicios de ejemplo | 1 | 2 |
 | Cuota | 2 CPU req · 2 GiB req · 3 GiB lím. | ídem |
 | Pod Security Admission | `baseline` (aviso `restricted`) | ídem |
 
@@ -249,7 +263,8 @@ a él con las variables del servicio seleccionado.
 
 Estimación de diseño; se contrasta con medidas reales al completar cada fase. Medida S4
 (12/10/2026, `docker stats` del nodo): clúster + Argo CD + Traefik = **1,41 GiB**, dentro del rango
-estimado para esos bloques (1,1 – 1,6 GiB).
+estimado para esos bloques (1,1 – 1,6 GiB). Medida S6: con los 6 pods de servicios, **1,56 GiB**
+(≈ 3,5 MiB por pod de servicio).
 
 | Bloque | Memoria estimada |
 |---|---|

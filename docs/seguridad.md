@@ -2,7 +2,7 @@
 
 Controles del prototipo y limitaciones que impiden considerarlo apto para producción.
 
-## Controles implementados (S3–S4)
+## Controles implementados (S3–S6)
 
 | Control | Implementación | Verificación |
 |---|---|---|
@@ -19,6 +19,10 @@ Controles del prototipo y limitaciones que impiden considerarlo apto para produc
 | Superficie de Argo CD | Sin Dex, notificaciones ni terminal web (`exec.enabled: false`); NetworkPolicies del chart limitan el acceso a repo-server y Redis | `infra/terraform/bootstrap/values/argocd.yaml.tftpl` |
 | API de Argo CD autenticada | Peticiones sin token rechazadas | HTTP 401 en `/api/v1/applications` (`docs/pruebas.md`) |
 | Protección de entornos | Namespaces con `Prune=false,Delete=false`: un cambio en Git no borra un entorno | `gitops/platform/namespaces` |
+| Servicios endurecidos | Pods conformes con Pod Security `restricted`: no root (65532), sin capacidades, sin escalada, raíz de solo lectura, `seccomp` por defecto, sin token de ServiceAccount; imagen distroless sin shell | `kubectl apply --dry-run=server` sin avisos `restricted` (`docs/pruebas.md`) |
+| Cadena de suministro | Imágenes base por digest; imágenes de servicio por SHA de commit (nunca `latest`); acciones de CI fijadas por SHA; `GITHUB_TOKEN` con `packages: write` solo en el job que publica | `make check` (SHA de 40 hex), workflows de `svc-*` |
+| Frontera de los servicios verificada | Una Application del proyecto `services` con destino fuera de `apps-*` se rechaza (`InvalidSpecError`) | `docs/pruebas.md` |
+| Imágenes sin credenciales en el clúster | Paquetes GHCR públicos (heredados del repositorio): sin `imagePullSecrets` | Descarga anónima HTTP 200 (`docs/pruebas.md`) |
 
 ## Controles previstos
 
