@@ -32,3 +32,17 @@ Totales: 14 pruebas, 11 críticas.
 |---|---|---|---|---|
 | 12/10/2026 | PA-01 | Superada | `make preflight` correcto (Docker 29.9.0, 9,7 GiB, 12 CPU); `make up`: `terraform apply` 1 recurso añadido, `kind_cluster.lab` creado en 50 s con `kindest/node:v1.35.0`; namespaces `apps-dev`/`apps-staging` con ResourceQuota y LimitRange aplicados | Puerto 80 ocupado por Apache del host; el autor lo desactivó (`systemctl disable --now apache2`) antes de crear el clúster |
 | 12/10/2026 | PA-02 | Superada | `make verify` (exit 0): 13/13 comprobaciones OK — clúster y kubeconfig (600), `/readyz`, nodo Ready con `ingress-ready=true`, kube-system y CoreDNS listos, versión v1.35.0, namespaces con etiqueta de entorno, cuota y LimitRange, pod de humo con DNS interno | — |
+
+## Verificaciones técnicas
+
+Comprobaciones de cada fase que no sustituyen a ninguna prueba de aceptación de la matriz (no
+computan en el criterio de la PEC1), pero dejan evidencia del funcionamiento de cada pieza.
+
+| Fecha | Verificación | Resultado | Evidencia |
+|---|---|---|---|
+| 12/10/2026 | S4 · Bootstrap de Argo CD (`make bootstrap`, revisión de la rama de trabajo) | Correcta | `terraform apply`: 2 recursos (`helm_release.argocd` en 31 s, `helm_release.argocd_apps` en 1 s); Argo CD v3.5.5; Applications `root`, `env-namespaces` y `traefik` en `Synced`/`Healthy` |
+| 12/10/2026 | S4 · Idempotencia del bootstrap | Correcta | Segundo `make bootstrap`: `No changes`, 0 añadidos/cambiados/destruidos |
+| 12/10/2026 | S4 · Verificación funcional (`make verify`) | Correcta | Clúster 13/13 OK; plataforma 20/20 OK (Argo CD disponible, AppProjects, 3 Applications sincronizadas y sanas, namespaces adoptados por `env-namespaces`, Traefik en el nodo `ingress-ready`, Ingress publicado en 127.0.0.1, `http://argocd.localtest.me` sirve la interfaz) |
+| 12/10/2026 | S4 · Autorreparación de un recurso de plataforma | Correcta | `kubectl delete resourcequota/env-quota -n apps-dev` → Argo CD la restaura en 2 s con los mismos límites |
+| 12/10/2026 | S4 · API de Argo CD a través de Traefik | Correcta | Login de `admin` en `/api/v1/session` → token; `/api/v1/applications` lista las 3 Applications del proyecto `platform`; sin token → HTTP 401 |
+| 12/10/2026 | S4 · Consumo de memoria | Medido | `docker stats` del nodo `idp-lab-control-plane`: 1,41 GiB (clúster + Argo CD + Traefik) |

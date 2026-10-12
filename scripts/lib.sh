@@ -23,6 +23,8 @@ export LAB_CLUSTER_NAME="${LAB_CLUSTER_NAME:-idp-lab}"
 export LAB_HTTP_PORT="${LAB_HTTP_PORT:-80}"
 export LAB_HTTPS_PORT="${LAB_HTTPS_PORT:-443}"
 export LAB_DOMAIN="${LAB_DOMAIN:-localtest.me}"
+export LAB_GITOPS_REPO="${LAB_GITOPS_REPO:-https://github.com/pablomartinvelasco/idp-tfg.git}"
+export LAB_GITOPS_REVISION="${LAB_GITOPS_REVISION:-main}"
 
 # Herramientas locales al proyecto y kubeconfig aislado (no se modifica ~/.kube/config).
 export TOOLS_DIR="${REPO_ROOT}/.tools/bin"
@@ -30,12 +32,19 @@ export PATH="${TOOLS_DIR}:${PATH}"
 export KUBECONFIG="${REPO_ROOT}/.kube/${LAB_CLUSTER_NAME}.yaml"
 export KUBE_CONTEXT="kind-${LAB_CLUSTER_NAME}"
 
-# Variables de entrada de Terraform derivadas de la configuración anterior.
+# Variables de entrada de Terraform derivadas de la configuración anterior (las que un módulo
+# no declara se ignoran).
 export TF_VAR_cluster_name="${LAB_CLUSTER_NAME}"
 export TF_VAR_node_image="${KIND_NODE_IMAGE}"
 export TF_VAR_kubeconfig_path="${KUBECONFIG}"
 export TF_VAR_http_port="${LAB_HTTP_PORT}"
 export TF_VAR_https_port="${LAB_HTTPS_PORT}"
+export TF_VAR_kube_context="${KUBE_CONTEXT}"
+export TF_VAR_domain="${LAB_DOMAIN}"
+export TF_VAR_gitops_repo_url="${LAB_GITOPS_REPO}"
+export TF_VAR_gitops_revision="${LAB_GITOPS_REVISION}"
+export TF_VAR_argocd_chart_version="${ARGOCD_CHART_VERSION}"
+export TF_VAR_argocd_apps_chart_version="${ARGOCD_APPS_CHART_VERSION}"
 export TF_IN_AUTOMATION=1
 
 if [[ -t 1 ]]; then

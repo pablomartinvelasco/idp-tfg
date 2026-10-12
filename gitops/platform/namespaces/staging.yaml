@@ -2,6 +2,10 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: apps-staging
+  annotations:
+    # Argo CD nunca borra el namespace (y con él todas las cargas del entorno): ni por prune
+    # ni al eliminar la Application. Retirar un entorno es una operación manual deliberada.
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
   labels:
     idp.tfg/environment: staging
     # Pod Security Admission: se impone "baseline" y se avisa de lo que incumpla "restricted".

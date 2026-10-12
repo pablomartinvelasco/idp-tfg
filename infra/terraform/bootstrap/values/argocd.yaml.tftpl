@@ -1,0 +1,52 @@
+# Valores del chart argo-cd para el laboratorio (plantilla de Terraform).
+# Instalación mínima: una réplica de cada componente, sin Dex ni notificaciones (arquitectura §10).
+
+global:
+  domain: ${host}
+
+configs:
+  params:
+    # Traefik publica la interfaz por HTTP (ADR-0005): argocd-server no termina TLS.
+    server.insecure: true
+  cm:
+    # Sin terminal web en los pods desde la interfaz.
+    exec.enabled: false
+    # Usuario admin local hasta definir perfiles (RBAC de Argo CD, S11; docs/seguridad.md).
+    admin.enabled: true
+    # Comprobación periódica de cambios en Git (valor por defecto del chart, explícito por RNF-02).
+    timeout.reconciliation: 120s
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+  resources:
+    requests: { cpu: 20m, memory: 64Mi }
+    limits: { memory: 256Mi }
+
+controller:
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 1Gi }
+
+repoServer:
+  # Renderiza charts y kustomizations; los charts grandes (kube-prometheus-stack, S10) piden memoria.
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 1Gi }
+
+applicationSet:
+  resources:
+    requests: { cpu: 10m, memory: 48Mi }
+    limits: { memory: 192Mi }
+
+redis:
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits: { memory: 128Mi }

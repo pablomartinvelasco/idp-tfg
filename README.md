@@ -11,7 +11,8 @@ despliega desde Git sobre un clúster Kubernetes local creado con Terraform.
 
 ## Estado
 
-S3 — arquitectura v1 y laboratorio Kubernetes inicial. Detalle en
+S4 — Argo CD instalado con Terraform; Traefik y los namespaces de entorno desplegados por
+GitOps desde `gitops/platform`. Detalle en
 [`docs/seguimiento.md`](docs/seguimiento.md).
 
 ## Inicio rápido
@@ -20,8 +21,9 @@ S3 — arquitectura v1 y laboratorio Kubernetes inicial. Detalle en
 sudo scripts/host/install-docker-wsl.sh   # una vez; después: wsl --shutdown
 make tools        # CLIs fijadas en versions.env → .tools/bin
 make preflight    # requisitos del host
-make up           # clúster kind (Terraform) + namespaces de entorno
-make verify       # verificación funcional
+make up           # clúster kind + Argo CD (Terraform); Argo CD despliega gitops/platform
+make verify       # verificación funcional (clúster y plataforma GitOps)
+make argocd-password   # contraseña inicial de admin para http://argocd.localtest.me
 ```
 
 `make help` lista todos los objetivos. Guía completa: [`docs/instalacion.md`](docs/instalacion.md).
@@ -36,14 +38,16 @@ make verify       # verificación funcional
 ├── scripts/                 # automatización: herramientas, preflight, clúster, verificación
 │   └── host/                # preparación del host WSL (requiere sudo)
 ├── infra/terraform/
-│   └── cluster/             # etapa 1: clúster kind
+│   ├── cluster/             # etapa 1: clúster kind
+│   └── bootstrap/           # etapa 2: Argo CD, AppProjects y Application raíz
 ├── gitops/                  # estado deseado que reconcilia Argo CD
-│   └── platform/namespaces/ # entornos apps-dev y apps-staging
+│   └── platform/
+│       ├── apps/            # app-of-apps: Traefik, namespaces de entorno
+│       └── namespaces/      # entornos apps-dev y apps-staging
 └── docs/                    # memoria técnica: arquitectura, requisitos, ADRs, pruebas
 ```
 
-Directorios previstos en fases posteriores: `infra/terraform/bootstrap/` (S5),
-`gitops/platform/apps/` (S5), `gitops/apps/` (S6), `portal/` (S7).
+Directorios previstos en fases posteriores: `gitops/apps/` (S6), `portal/` (S7).
 
 ## Documentación
 

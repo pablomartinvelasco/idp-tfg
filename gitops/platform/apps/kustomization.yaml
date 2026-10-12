@@ -1,0 +1,9 @@
+# App-of-apps de plataforma (ADR-0004). La Application raíz, creada por Terraform
+# (infra/terraform/bootstrap), sincroniza este directorio: cada recurso es una Application
+# del proyecto "platform". Añadir un componente = añadir su fichero aquí.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+resources:
+  - namespaces.yaml
+  - traefik.yaml

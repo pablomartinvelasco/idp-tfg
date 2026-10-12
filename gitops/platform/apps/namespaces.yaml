@@ -1,0 +1,18 @@
+# Namespaces de entorno apps-dev / apps-staging con su cuota y LimitRange (O3, RF-04).
+# Hasta S4 se aplicaban con kubectl; Argo CD adopta los objetos existentes sin recrearlos (ADR-0003).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: env-namespaces
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/pablomartinvelasco/idp-tfg.git
+    targetRevision: main
+    path: gitops/platform/namespaces
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
