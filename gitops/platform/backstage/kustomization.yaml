@@ -14,4 +14,4 @@ resources:
 images:
   # Imagen construida por .github/workflows/portal.yaml; etiqueta = SHA del commit de idp-tfg.
   - name: ghcr.io/pablomartinvelasco/idp-tfg/portal
-    newTag: PENDIENTE
+    newTag: 58d04a0e18ddadf6a018798a5cdd408723440186

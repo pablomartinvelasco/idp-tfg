@@ -63,6 +63,23 @@ else
   warn "${host} no resuelve a 127.0.0.1 (¿sin DNS público?): ver ADR-0005"
 fi
 
+log "Portal (Backstage)"
+portal="portal.${LAB_DOMAIN}"
+presolve="${portal}:${LAB_HTTP_PORT}:127.0.0.1"
+purl="http://${portal}:${LAB_HTTP_PORT}"
+pcode() { curl -s -o /dev/null -w '%{http_code}' --max-time 15 --resolve "${presolve}" "${purl}$1"; }
+check "backstage: Synced" equals Synced jp application/backstage argocd '{.status.sync.status}'
+check "backstage: Healthy" equals Healthy jp application/backstage argocd '{.status.health.status}'
+check "namespace backstage con Pod Security restricted" \
+  equals restricted jp namespace/backstage default '{.metadata.labels.pod-security\.kubernetes\.io/enforce}'
+check "PostgreSQL listo" kc rollout status statefulset/postgres -n backstage --timeout=120s
+check "${portal} sirve el frontend (Portal IDP)" bash -c \
+  "curl -fsS --max-time 15 --resolve '${presolve}' '${purl}/' | grep -q '<title>Portal IDP</title>'"
+check "readiness del backend a través de Traefik" equals 200 pcode /.backstage/health/v1/readiness
+check "API del catálogo sin identidad → 401" equals 401 pcode /api/catalog/entities
+check "proveedor GitHub activo (redirección a GitHub)" equals 302 pcode '/api/auth/github/start?env=production'
+check "sin proveedor invitado" equals 404 pcode '/api/auth/guest/refresh?env=production'
+
 log "Servicios (ApplicationSet services, gitops/apps)"
 check "ApplicationSet services existe" kc get applicationset/services -n argocd
 shopt -s nullglob
