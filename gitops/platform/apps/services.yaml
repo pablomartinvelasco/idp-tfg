@@ -1,0 +1,41 @@
+# Servicios de los equipos (ADR-0004): una Application por servicio y entorno, generada a partir
+# de los directorios gitops/apps/<svc>/overlays/<entorno>. Dar de alta un servicio = añadir su
+# directorio por PR (lo hará la plantilla, S9); no se edita nada más de la configuración central.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: services
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/pablomartinvelasco/idp-tfg.git
+        revision: main
+        directories:
+          - path: gitops/apps/*/overlays/*
+  template:
+    metadata:
+      # <svc>-<entorno>, p. ej. svc-catalogo-dev
+      name: '{{ index .path.segments 2 }}-{{ .path.basename }}'
+      labels:
+        idp.tfg/service: '{{ index .path.segments 2 }}'
+        idp.tfg/environment: '{{ .path.basename }}'
+      # Al retirar un servicio (borrar su directorio) se eliminan también sus recursos.
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      # El proyecto limita el destino a apps-dev/apps-staging: un overlay con otro nombre
+      # (p. ej. "prod") genera una Application que Argo CD rechaza.
+      project: services
+      source:
+        repoURL: https://github.com/pablomartinvelasco/idp-tfg.git
+        targetRevision: main
+        path: '{{ .path.path }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'apps-{{ .path.basename }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

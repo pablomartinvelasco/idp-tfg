@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Verificación funcional de la plataforma GitOps: Argo CD, AppProjects, Applications de
-# gitops/platform, namespaces de entorno gestionados por Argo CD y acceso por Traefik.
+# gitops/platform, namespaces de entorno gestionados por Argo CD, acceso por Traefik y
+# servicios desplegados por el ApplicationSet (un bloque por overlay de gitops/apps; PA-03).
 # Cada comprobación imprime OK/FAIL; el script falla si alguna no se cumple.
 
 source "$(dirname "$0")/lib.sh"
@@ -61,6 +62,28 @@ if getent ahostsv4 "${host}" | grep -q '^127\.0\.0\.1'; then
 else
   warn "${host} no resuelve a 127.0.0.1 (¿sin DNS público?): ver ADR-0005"
 fi
+
+log "Servicios (ApplicationSet services, gitops/apps)"
+check "ApplicationSet services existe" kc get applicationset/services -n argocd
+shopt -s nullglob
+for overlay in "${REPO_ROOT}"/gitops/apps/*/overlays/*/; do
+  env="$(basename "${overlay}")"
+  svc="$(basename "$(dirname "$(dirname "${overlay}")")")"
+  app="${svc}-${env}"
+  tag="$(sed -nE 's/^ *newTag: *([^ ]+).*/\1/p' "${overlay}kustomization.yaml")"
+  check "${app}: Synced" equals Synced jp "application/${app}" argocd '{.status.sync.status}'
+  check "${app}: Healthy" equals Healthy jp "application/${app}" argocd '{.status.health.status}'
+  url="http://${svc}.${env}.${LAB_DOMAIN}:${LAB_HTTP_PORT}"
+  resolve="${svc}.${env}.${LAB_DOMAIN}:${LAB_HTTP_PORT}:127.0.0.1"
+  check "${app}: ${url%:*}/ informa entorno ${env} y versión ${tag:0:7}" bash -c \
+    "curl -fsS --max-time 10 --resolve '${resolve}' '${url}/' | grep -q '\"entorno\":\"${env}\",.*\"version\":\"${tag}\"'"
+  # app_build_info existe en todos los pods desde el arranque. http_requests_total no sirve aquí:
+  # el cliente de Prometheus omite un contador con etiquetas hasta su primer uso, y con varias
+  # réplicas el pod que responde puede no haber atendido ninguna petición todavía.
+  check "${app}: /metrics publica app_build_info del entorno y la versión" bash -c \
+    "curl -fsS --max-time 10 --resolve '${resolve}' '${url}/metrics' | grep -qx 'app_build_info{environment=\"${env}\",service=\"${svc}\",version=\"${tag}\"} 1'"
+done
+shopt -u nullglob
 
 if (( errors > 0 )); then
   printf '\n'; die "${errors} verificación(es) fallida(s)."

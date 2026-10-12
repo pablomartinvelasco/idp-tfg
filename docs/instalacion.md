@@ -67,6 +67,18 @@ etapa 2.
 `*.localtest.me` resuelve a `127.0.0.1` mediante DNS público; sin conexión, añade
 `127.0.0.1 argocd.localtest.me` al fichero hosts (ADR-0005).
 
+## 6. Servicios de ejemplo
+
+Argo CD despliega `svc-catalogo` y `svc-pedidos` en los dos entornos a partir de `gitops/apps`
+(ApplicationSet `services`). Las imágenes son públicas en GHCR: no se necesita ninguna credencial.
+
+| Servicio | dev | staging |
+|---|---|---|
+| svc-catalogo | <http://svc-catalogo.dev.localtest.me/api/productos> | <http://svc-catalogo.staging.localtest.me/api/productos> |
+| svc-pedidos | <http://svc-pedidos.dev.localtest.me/api/pedidos> | <http://svc-pedidos.staging.localtest.me/api/pedidos> |
+
+`GET /` en cada URL muestra el entorno y la versión (SHA) desplegados; `/metrics`, las métricas.
+
 ## Pasos siguientes
 
-Servicios de ejemplo, portal y observabilidad se añadirán a esta guía en las fases S6–S10.
+Portal y observabilidad se añadirán a esta guía en las fases S7–S10.

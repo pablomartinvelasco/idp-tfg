@@ -13,11 +13,16 @@ require_cluster() {
   [[ -f "${KUBECONFIG}" ]] || die "no existe ${KUBECONFIG}: crea antes el clúster (make up)."
 }
 
-# La raíz crea las Applications de plataforma; cada una debe quedar Synced y Healthy.
+# La raíz crea las Applications de plataforma y los ApplicationSets, que a su vez generan las
+# de los servicios; todas deben quedar Synced y Healthy.
 wait_platform() {
-  local -a apps
+  local -a appsets apps
   log "Esperando a que Argo CD sincronice gitops/platform (${LAB_GITOPS_REPO}@${LAB_GITOPS_REVISION})"
   kc wait application/root -n argocd --for=jsonpath='{.status.sync.status}'=Synced --timeout=300s >/dev/null
+  mapfile -t appsets < <(kc get applicationsets -n argocd -o name)
+  if (( ${#appsets[@]} > 0 )); then
+    kc wait "${appsets[@]}" -n argocd --for=condition=ResourcesUpToDate --timeout=300s >/dev/null
+  fi
   mapfile -t apps < <(kc get applications -n argocd -o name)
   kc wait "${apps[@]}" -n argocd --for=jsonpath='{.status.sync.status}'=Synced --timeout=600s
   kc wait "${apps[@]}" -n argocd --for=jsonpath='{.status.health.status}'=Healthy --timeout=600s

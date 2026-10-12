@@ -10,3 +10,4 @@ sustituye por otro que lo referencie.
 | [0003](0003-bootstrap-y-propiedad-recursos.md) | Bootstrap en dos etapas de Terraform y propiedad única de recursos | Aceptado | 12/10/2026 |
 | [0004](0004-estrategia-gitops.md) | App-of-apps, ApplicationSet y overlays por entorno | Aceptado | 12/10/2026 |
 | [0005](0005-ingress-traefik.md) | Traefik como ingress y dominios `*.localtest.me` | Aceptado | 12/10/2026 |
+| [0006](0006-servicios-ejemplo-go.md) | Servicios de ejemplo en Go con imagen distroless y CI hacia GHCR | Aceptado | 12/10/2026 |
