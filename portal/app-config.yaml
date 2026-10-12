@@ -1,0 +1,103 @@
+# Configuración común del portal. Producción (clúster) añade app-config.production.yaml.
+# Ningún secreto en este fichero: los valores ${...} llegan por variables de entorno (RNF-04).
+app:
+  title: Portal IDP
+  baseUrl: http://localhost:3000
+  packages: all
+  extensions:
+    - page:catalog:
+        config:
+          path: /
+    - home-page-widget:home/toolkit:
+        config:
+          tools:
+            - url: http://argocd.localtest.me
+              label: Argo CD
+              icon: dashboard
+            - url: https://github.com/pablomartinvelasco/idp-tfg
+              label: Repositorio de plataforma
+              icon: github
+            - url: https://github.com/pablomartinvelasco/idp-tfg/tree/main/gitops/apps
+              label: Despliegues (GitOps)
+              icon: kind:component
+            - url: https://github.com/pablomartinvelasco/idp-tfg/tree/main/docs
+              label: Documentación de la plataforma
+              icon: docs
+    - page:home:
+        config:
+          defaultConfig:
+            - component: HomePageSearchBar
+              column: 0
+              row: 0
+              width: 12
+              height: 2
+              deletable: false
+            - component: GettingStarted
+              column: 0
+              row: 2
+              width: 6
+              height: 11
+            - component: HomePageToolkit
+              column: 6
+              row: 2
+              width: 6
+              height: 4
+            - component: HomePageStarredEntities
+              column: 6
+              row: 6
+              width: 6
+              height: 4
+            - component: HomePageRecentlyVisited
+              column: 6
+              row: 10
+              width: 6
+              height: 4
+
+organization:
+  name: IDP TFG
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+integrations:
+  github:
+    - host: github.com
+      # Token de solo lectura de repositorios públicos (fine-grained); ver docs/instalacion.md.
+      token: ${GITHUB_TOKEN}
+
+proxy: {}
+
+techdocs:
+  # La imagen del portal incluye mkdocs-techdocs-core: se genera dentro del propio pod.
+  builder: local
+  generator:
+    runIn: local
+  publisher:
+    type: local
+
+catalog:
+  rules:
+    - allow: [Component, System, Domain, API, Resource, Location, User, Group]
+  locations: []
+
+# Plugin de Kubernetes activo pero sin clústeres hasta S8 (ServiceAccount de solo lectura).
+kubernetes:
+  serviceLocatorMethod:
+    type: multiTenant
+  clusterLocatorMethods:
+    - type: config
+      clusters: []
+
+permission:
+  enabled: true

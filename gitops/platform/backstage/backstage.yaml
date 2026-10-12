@@ -1,0 +1,118 @@
+# Backstage: backend + frontend en un único contenedor (imagen de portal/), publicado por Traefik
+# en http://portal.localtest.me.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+    backstage.io/kubernetes-id: portal
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backstage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backstage
+        backstage.io/kubernetes-id: portal
+    spec:
+      # Sin token de Kubernetes hasta S8, cuando se le asigne una ServiceAccount de solo lectura.
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backstage
+          image: ghcr.io/pablomartinvelasco/idp-tfg/portal
+          ports:
+            - name: http
+              containerPort: 7007
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: backstage
+            # Revisión de idp-tfg de la que se lee el catálogo (catalog/all.yaml).
+            - name: CATALOG_GIT_REVISION
+              value: main
+          # POSTGRES_PASSWORD, AUTH_GITHUB_CLIENT_ID, AUTH_GITHUB_CLIENT_SECRET y GITHUB_TOKEN.
+          envFrom:
+            - secretRef:
+                name: backstage-secrets
+          readinessProbe:
+            httpGet:
+              path: /.backstage/health/v1/readiness
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /.backstage/health/v1/liveness
+              port: http
+            periodSeconds: 20
+          startupProbe:
+            httpGet:
+              path: /.backstage/health/v1/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            # Margen para la generación de TechDocs con mkdocs dentro del pod.
+            limits:
+              memory: 1536Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+spec:
+  selector:
+    app.kubernetes.io/name: backstage
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: portal.localtest.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backstage
+                port:
+                  name: http

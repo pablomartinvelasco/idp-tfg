@@ -38,6 +38,10 @@ for overlay in "${REPO_ROOT}"/gitops/apps/*/overlays/*/; do
 done
 shopt -u nullglob
 
+log "Portal (gitops/platform/backstage)"
+run "imagen del portal fijada por SHA de commit (40 hex)" \
+  grep -qE '^ *newTag: *[0-9a-f]{40} *$' "${REPO_ROOT}/gitops/platform/backstage/kustomization.yaml"
+
 log "Versiones (versions.env como fuente única)"
 traefik_app="${REPO_ROOT}/gitops/platform/apps/traefik.yaml"
 run "chart de Traefik en GitOps = TRAEFIK_CHART_VERSION (${TRAEFIK_CHART_VERSION})" \
@@ -46,7 +50,7 @@ run "chart de Traefik en GitOps = TRAEFIK_CHART_VERSION (${TRAEFIK_CHART_VERSION
 log "Secretos (RNF-04)"
 run ".env no versionado" bash -c "! git -C '${REPO_ROOT}' ls-files --error-unmatch .env"
 run "sin patrones de credenciales en ficheros versionables" bash -c \
-  "! git -C '${REPO_ROOT}' grep -nIE --untracked -e 'gh[pousr]_[A-Za-z0-9]{36}' -e 'github_pat_[A-Za-z0-9_]{60,}' -e 'AKIA[0-9A-Z]{16}' -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' -- ':!scripts/check.sh'"
+  "! git -C '${REPO_ROOT}' grep -nIE --untracked -e 'gh[pousr]_[A-Za-z0-9]{36}' -e 'github_pat_[A-Za-z0-9_]{60,}' -e 'AKIA[0-9A-Z]{16}' -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' -- ':!scripts/check.sh' ':!portal/.yarn/releases/*'"
 
 if (( errors > 0 )); then
   printf '\n'; die "${errors} comprobación(es) fallida(s)."

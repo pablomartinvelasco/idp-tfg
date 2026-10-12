@@ -1,0 +1,9 @@
+# Contexto de la compilación multietapa (Dockerfile): fuentes sí, artefactos locales no.
+.git
+.yarn/cache
+.yarn/install-state.gz
+node_modules
+packages/*/node_modules
+packages/*/dist
+dist-types
+*.local.yaml
