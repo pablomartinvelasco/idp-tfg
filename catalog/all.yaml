@@ -1,0 +1,15 @@
+# Raíz del catálogo del portal (RF-01). Backstage la lee desde GitHub (app-config.production.yaml).
+# Las rutas relativas se resuelven en la misma revisión del repositorio.
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: idp-catalogo
+  description: Organización, sistemas y servicios de la plataforma
+spec:
+  targets:
+    - ./org.yaml
+    - ./systems.yaml
+    - ../portal/catalog-info.yaml
+    # Servicios: cada uno publica su catalog-info.yaml en su propio repositorio (ADR-0001).
+    - https://github.com/pablomartinvelasco/svc-catalogo/blob/main/catalog-info.yaml
+    - https://github.com/pablomartinvelasco/svc-pedidos/blob/main/catalog-info.yaml

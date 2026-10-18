@@ -5,7 +5,7 @@ SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 SCRIPTS := ./scripts
 
-.PHONY: help tools preflight check up bootstrap plan down status verify argocd-password kubeconfig
+.PHONY: help tools preflight check up secrets bootstrap plan down status verify argocd-password kubeconfig
 
 help: ## Muestra esta ayuda
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  \033[1m%-12s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -23,9 +23,13 @@ plan: ## terraform plan de las dos etapas (clúster y bootstrap)
 	@$(SCRIPTS)/cluster.sh plan
 	@$(SCRIPTS)/bootstrap.sh plan
 
-up: ## Crea el clúster e instala Argo CD, que despliega la plataforma desde Git
+up: ## Crea el clúster, sus secretos e instala Argo CD, que despliega la plataforma desde Git
 	@$(SCRIPTS)/cluster.sh up
+	@$(SCRIPTS)/secrets.sh
 	@$(SCRIPTS)/bootstrap.sh up
+
+secrets: ## Crea o actualiza los secretos de la plataforma desde .env (nunca en Git)
+	@$(SCRIPTS)/secrets.sh
 
 bootstrap: ## Instala o actualiza Argo CD y la Application raíz (etapa 2, ADR-0003)
 	@$(SCRIPTS)/bootstrap.sh up

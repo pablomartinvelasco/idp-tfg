@@ -1,0 +1,63 @@
+# Organización ficticia de la plataforma (datos sintéticos salvo el usuario del autor; RNF-03).
+#
+# Dos tipos de grupo:
+# - Perfiles (O7): platform-admins y developers. La política de permisos del backend (S11)
+#   decide qué puede hacer cada uno; el inicio de sesión exige que el User exista aquí.
+# - Equipos propietarios de servicios: equipo-catalogo y equipo-pedidos.
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform-admins
+  title: Administradores de plataforma
+  description: Mantienen la plataforma, aprueban los PR de GitOps y administran Argo CD.
+spec:
+  type: role
+  profile:
+    displayName: Administradores de plataforma
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: developers
+  title: Desarrolladores
+  description: Consultan el catálogo, usan las plantillas y proponen cambios por PR.
+spec:
+  type: role
+  profile:
+    displayName: Desarrolladores
+  children: [equipo-catalogo, equipo-pedidos]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: equipo-catalogo
+  title: Equipo Catálogo
+  description: Responsable del catálogo de productos de la tienda de demostración.
+spec:
+  type: team
+  parent: developers
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: equipo-pedidos
+  title: Equipo Pedidos
+  description: Responsable de la gestión de pedidos de la tienda de demostración.
+spec:
+  type: team
+  parent: developers
+  children: []
+---
+# El nombre de cada User debe coincidir con su cuenta de GitHub (resolver
+# usernameMatchingUserEntityName). La cuenta de desarrollador para PA-11 se añadirá en S11.
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: pablomartinvelasco
+  title: Pablo Martín Velasco
+spec:
+  profile:
+    displayName: Pablo Martín Velasco
+  memberOf: [platform-admins]

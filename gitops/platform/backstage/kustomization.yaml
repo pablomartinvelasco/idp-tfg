@@ -1,0 +1,17 @@
+# Portal (Backstage) y su base de datos (arquitectura §8). Lo sincroniza la Application
+# "backstage" (gitops/platform/apps). El Secret backstage-secrets NO está en Git: lo crea
+# scripts/secrets.sh desde .env (RNF-04).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: backstage
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: idp-plataforma
+    includeTemplates: true
+resources:
+  - postgres.yaml
+  - backstage.yaml
+images:
+  # Imagen construida por .github/workflows/portal.yaml; etiqueta = SHA del commit de idp-tfg.
+  - name: ghcr.io/pablomartinvelasco/idp-tfg/portal
+    newTag: 639714ded9b94e4c129431b03664fd9bb71da219

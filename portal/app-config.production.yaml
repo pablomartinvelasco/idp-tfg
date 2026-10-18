@@ -1,0 +1,47 @@
+# Configuración del portal desplegado en el laboratorio (gitops/platform/backstage).
+# Los ${...} proceden del Secret backstage-secrets, creado por scripts/secrets.sh desde .env.
+app:
+  baseUrl: http://portal.localtest.me
+
+backend:
+  baseUrl: http://portal.localtest.me
+  listen: ':7007'
+  csp:
+    # El laboratorio sirve por HTTP (ADR-0005). La CSP por defecto de Backstage incluye
+    # upgrade-insecure-requests y el navegador pediría los recursos por HTTPS: página en blanco.
+    upgrade-insecure-requests: false
+  cors:
+    origin: http://portal.localtest.me
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+
+auth:
+  environment: production
+  providers:
+    github:
+      production:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            # Solo entran cuentas de GitHub con un User del mismo nombre en el catálogo
+            # (catalog/org.yaml); su pertenencia a grupos define el perfil (ADR-0007).
+            - resolver: usernameMatchingUserEntityName
+
+techdocs:
+  publisher:
+    local:
+      # La raíz del contenedor es de solo lectura: los sitios generados van a un emptyDir.
+      publishDirectory: /tmp/techdocs
+
+catalog:
+  locations:
+    # Organización, sistemas y referencias a los catalog-info.yaml de cada servicio.
+    # CATALOG_GIT_REVISION la fija el Deployment (main; otra rama solo para probar cambios).
+    - type: url
+      target: https://github.com/pablomartinvelasco/idp-tfg/blob/${CATALOG_GIT_REVISION}/catalog/all.yaml

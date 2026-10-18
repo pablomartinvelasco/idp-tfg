@@ -1,0 +1,25 @@
+# Portal de desarrolladores (Backstage) y su PostgreSQL. El namespace y el Secret los crea antes
+# scripts/secrets.sh (make secrets); Argo CD añade aquí las etiquetas de Pod Security.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backstage
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/pablomartinvelasco/idp-tfg.git
+    targetRevision: main
+    path: gitops/platform/backstage
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backstage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: restricted
+        pod-security.kubernetes.io/warn: restricted

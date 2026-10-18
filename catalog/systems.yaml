@@ -1,0 +1,33 @@
+# Sistemas del catálogo: agrupan componentes relacionados.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: comercio
+  title: Comercio
+  description: Dominio de negocio ficticio de la tienda de demostración.
+spec:
+  owner: group:default/developers
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: tienda-demo
+  title: Tienda de demostración
+  description: Servicios de ejemplo desplegados por la plataforma en apps-dev y apps-staging.
+spec:
+  owner: group:default/developers
+  domain: comercio
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: idp-plataforma
+  title: Plataforma interna de desarrollo
+  description: Portal, GitOps (Argo CD), ingress y observabilidad del laboratorio.
+  links:
+    - url: http://argocd.localtest.me
+      title: Argo CD
+    - url: https://github.com/pablomartinvelasco/idp-tfg
+      title: Repositorio de plataforma
+spec:
+  owner: group:default/platform-admins

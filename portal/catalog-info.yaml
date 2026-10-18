@@ -1,0 +1,20 @@
+# El propio portal como componente de la plataforma.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: portal
+  title: Portal IDP (Backstage)
+  description: Portal de desarrolladores de la plataforma; catálogo, documentación y plantillas.
+  annotations:
+    github.com/project-slug: pablomartinvelasco/idp-tfg
+    backstage.io/kubernetes-id: portal
+  links:
+    - url: http://portal.localtest.me
+      title: Portal
+    - url: https://github.com/pablomartinvelasco/idp-tfg/tree/main/gitops/platform/backstage
+      title: Configuración de despliegue (GitOps)
+spec:
+  type: website
+  lifecycle: experimental
+  owner: group:default/platform-admins
+  system: idp-plataforma
