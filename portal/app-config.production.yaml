@@ -6,6 +6,10 @@ app:
 backend:
   baseUrl: http://portal.localtest.me
   listen: ':7007'
+  csp:
+    # El laboratorio sirve por HTTP (ADR-0005). La CSP por defecto de Backstage incluye
+    # upgrade-insecure-requests y el navegador pediría los recursos por HTTPS: página en blanco.
+    upgrade-insecure-requests: false
   cors:
     origin: http://portal.localtest.me
   database:
