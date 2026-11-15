@@ -4,17 +4,17 @@ Documento vivo para retomar el trabajo entre sesiones. Registra el estado real (
 verificado / pendiente), las decisiones y las incidencias. Las decisiones de arquitectura se
 detallan en `docs/adr/`.
 
-## Estado actual (15/11/2026, revisión `bff74c8` + rama `pec2-integracion-k8s`)
+## Estado actual (15/11/2026, revisión `f3ac349`)
 
-**PEC2 — S7 fusionada, portal bloqueado por credenciales.** `main` local se avanzó (fast-forward)
-a `origin/main` (`bff74c8`, PR #3 de S7). Rama de trabajo: `pec2-integracion-k8s`.
+**PEC2 — S7 y S8 cerradas; PA-06 y PA-07 superadas.** `main` local se avanzó (fast-forward)
+a `origin/main` (`bff74c8`, PR #3 de S7). Cambios fusionados en `main` por los PR #4 y #5.
 
 | Bloque | Implementado | Verificado (15/11/2026) | Pendiente |
 |---|---|---|---|
 | Clúster, Argo CD, Traefik, namespaces (O2, O3) | Terraform (`kind_cluster.lab`, `helm_release.argocd`, `helm_release.argocd_apps`) + Argo CD | Nodo `Ready` (v1.35.0); 7 Applications `Synced`, 6 `Healthy` | — |
 | Servicios de ejemplo (O3) | `svc-catalogo`, `svc-pedidos` en dev (1 réplica) y staging (2) | 4 Applications `Synced`/`Healthy`; 6 pods `Running`; PA-03/04/05/13 superadas (12/10) | — |
 | Portal Backstage (O4, S7) | `portal/`, imagen `639714d`, `gitops/platform/backstage` | Inicialmente no operativo (falta `backstage-secrets`); tras `make secrets`: pods listos, `make verify` completo OK, login con GitHub y catálogo funcionando | — |
-| Acceso a Kubernetes desde el portal (RF-05, S8) | `rbac.yaml` (ServiceAccount + ClusterRole de solo lectura), `kubernetes:` en `app-config.production.yaml`, ADR-0009, comprobaciones en `make check`/`make verify` | `make check` OK; `apply --dry-run=server` OK. **PA-07 no ejecutada** | Publicar rama, imagen por CI, fijar `newTag`, fusionar y validar desde el portal |
+| Acceso a Kubernetes desde el portal (RF-05, S8) | `rbac.yaml` (ServiceAccount + ClusterRole de solo lectura), `kubernetes:` en `app-config.production.yaml`, ADR-0009, comprobaciones en `make check`/`make verify` | Pestaña Kubernetes con pods, Deployments, Services e Ingress reales; permisos mínimos comprobados con `make verify`. **PA-07 superada** (15/11/2026) | Enlace a la Application de Argo CD (plugin o enlace) |
 | Catálogo (RF-01) | `catalog/*.yaml` + `catalog-info.yaml` de cada servicio (anotaciones, enlaces, propietario, TechDocs) | Metadatos revisados en origen; **PA-06 superada** (15/11/2026) | Añadir enlace a la Application de Argo CD en los `catalog-info.yaml` de los repos de servicio (requiere push a esos repos) |
 | Justificación de ingeniería | `docs/ingenieria.md`, ADR-0008, ADR-0009 | Documentación; sin medidas | Comparación cuantitativa con Port solo si se necesita |
 | Metodología DX | `docs/metodologia-dx.md`, `scripts/dx-medir.sh`, `scripts/dx-analisis.sh` | Análisis probado con datos sintéticos desechados; **0 mediciones reales** | Ejecutar tras S9 y S10 |
@@ -22,16 +22,11 @@ a `origin/main` (`bff74c8`, PR #3 de S7). Rama de trabajo: `pec2-integracion-k8s
 
 ## Próximos pasos
 
-1. **Autor** (credenciales, no se piden por chat): crear la OAuth App de GitHub y el token
-   *fine-grained*, rellenar `.env` (`AUTH_GITHUB_CLIENT_ID`, `AUTH_GITHUB_CLIENT_SECRET`,
-   `GITHUB_TOKEN`) y ejecutar `make secrets` (`docs/instalacion.md` §7).
-2. **Autor** (autorización): publicar `pec2-integracion-k8s` para que la CI construya la imagen
-   del portal con la configuración de Kubernetes; después, un commit que fije `newTag` en
-   `gitops/platform/backstage/kustomization.yaml` y PR a `main`.
-3. Con el portal sano: `make verify`; ejecutar PA-06 y PA-07 desde el navegador y registrar la
-   evidencia (capturas con revisión y fecha).
-4. Retomar S9 (plantilla Scaffolder), S10 (Prometheus/Grafana) y S11 (permisos); después, el
-   experimento DX.
+1. Enlazar cada ficha con su Application de Argo CD (requiere push a los repos `svc-*`, no hecho).
+2. S9: plantilla Scaffolder (PA-08); S10: Prometheus/Grafana (PA-09); S11: permisos por perfil (PA-11).
+3. Ejecutar `make down && make up && make verify` para PA-12 y repetir PA-01/02 con el flujo completo.
+4. Experimento DX (`docs/metodologia-dx.md`) cuando existan plantilla y observabilidad.
+5. Las ramas `worktree-*` y `s6-prueba-argocd` locales pueden borrarse (el autor decide).
 
 ## Decisiones tomadas
 
@@ -94,3 +89,6 @@ Localizadas en la inspección inicial (12/10/2026):
 | 12/10/2026 | Kubernetes 1.37 no utilizable con Terraform | El provider `tehcyx/kind` 0.11.0 embebe kind 0.31 | Kubernetes 1.35.0 (ADR-0002) |
 | 15/11/2026 | `backstage` `Degraded` y pods en `CreateContainerConfigError` desde hace 28 días | `Secret backstage-secrets` inexistente: `make secrets` no se ha ejecutado y falta `.env` (credenciales de GitHub) | Pendiente de las credenciales del autor; procedimiento en `docs/instalacion.md` §7 |
 | 15/11/2026 | El test E2E del portal presuponía acceso de invitado (botón `Enter`) | Plantilla de Backstage; ADR-0007 elimina el proveedor invitado | Reescrito: sin sesión debe mostrar solo GitHub. Sin ejecutar (requiere el entorno de Node y el portal); el flujo con OAuth se prueba manualmente |
+| 15/11/2026 | Pestaña Kubernetes: «Permission required» con el backend autorizando | `crypto.randomUUID` no existe en contextos HTTP no seguros (`portal.localtest.me`); la comprobación de permisos del frontend fallaba antes de enviarse | Polyfill en `portal/packages/app/src/randomUuidPolyfill.ts` (imagen `5de35b7`) |
+| 15/11/2026 | `make verify`: «NO puede leer logs» fallaba | `kubectl auth can-i get pods/log` trata `log` como nombre de pod | Se usa `--subresource=log` / `exec` |
+| 15/11/2026 | Un `git add -A` incluyó los worktrees de `.claude/` como enlaces en un commit de rama | `.claude/` sin ignorar | Retirados en un commit posterior y `.claude/worktrees/` añadido a `.gitignore`; sin contenido expuesto |

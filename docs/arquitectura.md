@@ -298,11 +298,8 @@ que los servicios expongan `/metrics` (S6).
 
 ## 11. Estado de verificación a 15/11/2026
 
-- Verificado: clúster, Argo CD, Traefik, namespaces y los 4 servicios (`make verify`: 28 de 39
-  comprobaciones OK; las 11 fallidas son del portal y de su acceso a Kubernetes).
-- Implementado y **sin validar** en ejecución: acceso del portal a Kubernetes (`rbac.yaml`,
-  `kubernetes:` en `app-config.production.yaml`), a la espera de crear `backstage-secrets`
-  y de publicar la nueva imagen del portal.
-- Bloqueado: `backstage-secrets` no existe porque `.env` no existe en este equipo
-  (OAuth App y token de GitHub); el portal y PostgreSQL están en `CreateContainerConfigError`.
-- Ver justificación y fuentes de verdad en [ingenieria.md](ingenieria.md).
+- Verificado con `make verify` (0 fallos): clúster, Argo CD, Traefik, namespaces, los 4 servicios,
+  el portal (login con GitHub, sin invitado) y los permisos de solo lectura de su ServiceAccount.
+- PA-06 y PA-07 superadas desde el portal (`docs/pruebas.md`).
+- Pendiente: permisos por perfil (hoy *allow-all*), enlace a Argo CD, plantilla, observabilidad.
+- Justificación y fuentes de verdad en [ingenieria.md](ingenieria.md).

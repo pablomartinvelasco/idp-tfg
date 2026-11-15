@@ -50,11 +50,11 @@ estar en Git (RNF-04); Argo CD solo añade las etiquetas de Pod Security al name
 ## 5. Roles: modelo previsto y grado de implementación
 | Aspecto | Modelo previsto (ADR-0007) | Estado real a 15/11/2026 |
 |---|---|---|
-| Identidad | GitHub OAuth; solo cuentas con `User` en el catálogo | Configurado; **no validado** (falta el Secret) |
+| Identidad | GitHub OAuth; solo cuentas con `User` en el catálogo | Validado el inicio de sesión con GitHub (cuenta del autor) |
 | Perfiles | Grupos `developers` y `platform-admins` | Definidos en `catalog/org.yaml`; un solo usuario (administrador) |
 | Autorización | Política propia en el backend (S11) | **Allow-all** para usuarios identificados: **no existe separación efectiva por perfil** |
 | Argo CD | Administración reservada a `platform-admins` | Solo la cuenta `admin` de Argo CD |
-| Acceso a Kubernetes desde el portal | Solo lectura (ADR-0009) | Manifiestos preparados; sin validar |
+| Acceso a Kubernetes desde el portal | Solo lectura (ADR-0009) | Implementado y validado (PA-07); todos los usuarios autenticados ven lo mismo |
 PA-11 sigue **no ejecutada**.
 
 ## 6. Aportación propia frente a instalación de componentes
