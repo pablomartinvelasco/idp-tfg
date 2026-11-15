@@ -14,6 +14,6 @@ vista muestra un usuario, usar solo el nombre público de GitHub.
 | 6 | TechDocs de ambos servicios | Portal → Docs | **Capturada** | `…_pa06_techdocs-svc-catalogo.png`, `…_techdocs-svc-pedidos.png` |
 | 7 | Vista Kubernetes de un servicio | Ficha → pestaña Kubernetes | **Capturada** | `2026-11-15_f3ac349_pa07_kubernetes-svc-catalogo.jpg`, `…_svc-pedidos.jpg` |
 | 8 | Salida de `make verify` completa | `make verify` | **Capturada**: 69 OK, 0 fallos | `2026-11-15_2f610c0_make-verify.txt` |
-| 10 | Interfaz de Argo CD con las 4 aplicaciones | `http://argocd.localtest.me/applications` | **Pendiente**: la hace el autor (inicio de sesión) | — |
+| 10 | Interfaz de Argo CD con las 4 aplicaciones | `http://argocd.localtest.me/applications` | **Capturada** por el autor: 8 Applications `Synced`/`Healthy`, Argo CD v3.5.5 | `2026-11-15_4c66bbb_argocd-applications.png` |
 | 11 | Fichas con enlaces a Argo CD y test E2E | Portal / Playwright | **Capturadas** | `…_enlaces-argocd-ficha-svc-catalogo.jpg`, `…_e2e-playwright-login.png` |
 | 9 | Matriz de pruebas | `docs/pruebas.md` | Disponible (actualizada) | — |

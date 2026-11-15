@@ -22,7 +22,7 @@ a `origin/main` (`bff74c8`, PR #3 de S7). Cambios fusionados en `main` por los P
 
 ## Próximos pasos
 
-1. Capturar la interfaz de Argo CD con las 4 aplicaciones (requiere iniciar sesión el autor; el navegador automatizado no abre `argocd.localtest.me`).
+1. ~~Capturar la interfaz de Argo CD~~ Hecho el 15/11/2026 por el autor (`docs/evidencias/2026-11-15_4c66bbb_argocd-applications.png`).
 2. S9: plantilla Scaffolder (PA-08); S10: Prometheus/Grafana (PA-09); S11: permisos por perfil (PA-11).
 3. Ejecutar `make down && make up && make verify` para PA-12 y repetir PA-01/02 con el flujo completo.
 4. Experimento DX (`docs/metodologia-dx.md`) cuando existan plantilla y observabilidad.
