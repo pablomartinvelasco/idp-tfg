@@ -79,6 +79,27 @@ Argo CD despliega `svc-catalogo` y `svc-pedidos` en los dos entornos a partir de
 
 `GET /` en cada URL muestra el entorno y la versión (SHA) desplegados; `/metrics`, las métricas.
 
+## 7. Portal (Backstage)
+
+El portal necesita un Secret `backstage-secrets` que **no está en Git**. Sin él, los pods
+`backstage` y `postgres` quedan en `CreateContainerConfigError` (Argo CD marca la Application
+`backstage` como `Degraded`).
+
+1. Crear una *OAuth App* de GitHub (Settings → Developer settings → OAuth Apps) con
+   *Homepage URL* `http://portal.localtest.me` y *Authorization callback URL*
+   `http://portal.localtest.me/api/auth/github/handler/frame`.
+2. Crear un token *fine-grained* de solo lectura de repositorios públicos (para el catálogo y TechDocs).
+3. Copiar `.env.example` a `.env` y rellenar `AUTH_GITHUB_CLIENT_ID`, `AUTH_GITHUB_CLIENT_SECRET`
+   y `GITHUB_TOKEN`. El fichero está excluido de Git; no lo compartas.
+4. `make secrets`: crea el Secret (la contraseña de PostgreSQL se genera sola la primera vez) y,
+   si cambia, reinicia el portal. Los valores no se muestran.
+5. `make verify`: debe dar OK el bloque *Portal*, y *Portal → Kubernetes (solo lectura)*.
+6. Abrir <http://portal.localtest.me> e iniciar sesión con la cuenta de GitHub dada de alta como
+   `User` en `catalog/org.yaml`.
+
+Cambios en `portal/` se publican con la CI `portal` (imagen etiquetada con el SHA); el despliegue
+solo cambia al actualizar `newTag` en `gitops/platform/backstage/kustomization.yaml` mediante PR.
+
 ## Pasos siguientes
 
-Portal y observabilidad se añadirán a esta guía en las fases S7–S10.
+Observabilidad se añadirá a esta guía en la fase S10.

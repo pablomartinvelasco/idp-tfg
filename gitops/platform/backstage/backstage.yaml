@@ -19,8 +19,9 @@ spec:
         app.kubernetes.io/name: backstage
         backstage.io/kubernetes-id: portal
     spec:
-      # Sin token de Kubernetes hasta S8, cuando se le asigne una ServiceAccount de solo lectura.
-      automountServiceAccountToken: false
+      # ServiceAccount de solo lectura (rbac.yaml): el plugin de Kubernetes usa su token in-cluster.
+      serviceAccountName: backstage
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

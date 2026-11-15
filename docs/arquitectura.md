@@ -235,16 +235,16 @@ sequenceDiagram
 La revisión del PR por un administrador es deliberada: separa perfiles (desarrollador propone,
 plataforma aprueba) sin automatizaciones adicionales, y deja trazabilidad en Git.
 
-## 8. Portal (previsto S7–S9)
+## 8. Portal (S7 desplegado; integración Kubernetes S8, pendiente de validar)
 
 - App Backstage generada con `@backstage/create-app` en `portal/`, con el nuevo *backend system*.
 - Personalización mediante tema propio y páginas/entidades del catálogo; no se reimplementa el
   portal (requisito del prompt maestro).
 - Plugins previstos: Software Catalog, Scaffolder, TechDocs (*local builder*), Kubernetes
-  (estado de pods, ServiceAccount de solo lectura), integración con Argo CD (estado de sync) y
+  (estado de pods; ServiceAccount de solo lectura, ADR-0009), integración con Argo CD (estado de sync) y
   enlaces/paneles de Grafana por anotación.
 - Autenticación y permisos: proveedor de identidad y *permission policy* en backend con dos
-  grupos, `platform-admins` y `developers` (O7). Decisión concreta en ADR pendiente (S7).
+  grupos, `platform-admins` y `developers` (O7). Decisión en ADR-0007; la política de permisos es hoy *allow-all* (separación por perfil pendiente, S11).
 
 ## 9. Observabilidad (previsto S10)
 
@@ -295,3 +295,14 @@ de la PEC1 se respeta permitiendo levantar fases parciales (sin monitorización 
 Dependencias entre fases: S4 (Argo CD) requiere el repo publicado en GitHub; S7 (portal) requiere
 S4 para su despliegue; S9 (plantilla) requiere S6 (estructura de `gitops/apps`) y S7; S10 requiere
 que los servicios expongan `/metrics` (S6).
+
+## 11. Estado de verificación a 15/11/2026
+
+- Verificado: clúster, Argo CD, Traefik, namespaces y los 4 servicios (`make verify`: 28 de 39
+  comprobaciones OK; las 11 fallidas son del portal y de su acceso a Kubernetes).
+- Implementado y **sin validar** en ejecución: acceso del portal a Kubernetes (`rbac.yaml`,
+  `kubernetes:` en `app-config.production.yaml`), a la espera de crear `backstage-secrets`
+  y de publicar la nueva imagen del portal.
+- Bloqueado: `backstage-secrets` no existe porque `.env` no existe en este equipo
+  (OAuth App y token de GitHub); el portal y PostgreSQL están en `CreateContainerConfigError`.
+- Ver justificación y fuentes de verdad en [ingenieria.md](ingenieria.md).

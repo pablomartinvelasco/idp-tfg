@@ -9,9 +9,10 @@ labels:
       app.kubernetes.io/part-of: idp-plataforma
     includeTemplates: true
 resources:
+  - rbac.yaml
   - postgres.yaml
   - backstage.yaml
 images:
   # Imagen construida por .github/workflows/portal.yaml; etiqueta = SHA del commit de idp-tfg.
   - name: ghcr.io/pablomartinvelasco/idp-tfg/portal
-    newTag: 639714ded9b94e4c129431b03664fd9bb71da219
+    newTag: b5f853d449416237d0188aa013b9b4a2d25393f8

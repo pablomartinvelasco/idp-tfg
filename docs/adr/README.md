@@ -11,3 +11,6 @@ sustituye por otro que lo referencie.
 | [0004](0004-estrategia-gitops.md) | App-of-apps, ApplicationSet y overlays por entorno | Aceptado | 12/10/2026 |
 | [0005](0005-ingress-traefik.md) | Traefik como ingress y dominios `*.localtest.me` | Aceptado | 12/10/2026 |
 | [0006](0006-servicios-ejemplo-go.md) | Servicios de ejemplo en Go con imagen distroless y CI hacia GHCR | Aceptado | 12/10/2026 |
+| [0007](0007-autenticacion-permisos-portal.md) | Autenticación del portal con GitHub y perfiles en el catálogo | Aceptado | 12/10/2026 |
+| [0008](0008-backstage-frente-a-alternativas.md) | Backstage frente a portal propio o solución gestionada | Aceptado | 15/11/2026 |
+| [0009](0009-acceso-kubernetes-solo-lectura.md) | Acceso de solo lectura del portal a Kubernetes | Aceptado | 15/11/2026 |

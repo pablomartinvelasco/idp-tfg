@@ -1,33 +1,17 @@
-/*
- * Copyright 2020 The Backstage Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { test, expect } from '@playwright/test';
 
-test('App should render the welcome page', async ({ page }) => {
+// El portal exige identidad de GitHub (ADR-0007). Sin sesión debe mostrar el inicio de sesión
+// de GitHub y NO ofrecer el acceso de invitado. El flujo completo con OAuth no se automatiza:
+// requiere una cuenta real y se registra manualmente en docs/pruebas.md (PA-06, PA-07).
+test('Sin sesión, el portal ofrece solo el inicio de sesión con GitHub', async ({
+  page,
+}) => {
   await page.goto('/');
 
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-
-  const nav = page.getByRole('navigation', { name: 'sidebar nav' });
   await expect(
-    nav.getByRole('link', { name: 'Catalog', exact: true }),
+    page.getByText('Portal de la plataforma', { exact: false }).first(),
   ).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'APIs', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByText('GitHub').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Enter' })).toHaveCount(0);
+  await expect(page.getByText('Guest')).toHaveCount(0);
 });

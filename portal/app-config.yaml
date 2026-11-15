@@ -91,7 +91,8 @@ catalog:
     - allow: [Component, System, Domain, API, Resource, Location, User, Group]
   locations: []
 
-# Plugin de Kubernetes activo pero sin clústeres hasta S8 (ServiceAccount de solo lectura).
+# Plugin de Kubernetes: el clúster se declara en app-config.production.yaml (ADR-0009); en desarrollo
+# local no hay clústeres configurados.
 kubernetes:
   serviceLocatorMethod:
     type: multiTenant
