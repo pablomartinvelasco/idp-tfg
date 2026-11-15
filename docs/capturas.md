@@ -17,3 +17,5 @@ vista muestra un usuario, usar solo el nombre público de GitHub.
 | 10 | Interfaz de Argo CD con las 4 aplicaciones | `http://argocd.localtest.me/applications` | **Capturada** por el autor: 8 Applications `Synced`/`Healthy`, Argo CD v3.5.5 | `2026-11-15_4c66bbb_argocd-applications.png` |
 | 11 | Fichas con enlaces a Argo CD y test E2E | Portal / Playwright | **Capturadas** | `…_enlaces-argocd-ficha-svc-catalogo.jpg`, `…_e2e-playwright-login.png` |
 | 9 | Matriz de pruebas | `docs/pruebas.md` | Disponible (actualizada) | — |
+| 12 | Detalle de recursos de svc-catalogo (Deployments, Ingress, Services) | Ficha → Kubernetes → clúster expandido | **Capturada** | `2026-11-15_525016c_pa07_kubernetes-svc-catalogo-recursos.jpg` |
+| 13 | Diagrama de arquitectura de la memoria (PEC2) | `docs/figuras/arquitectura-pec2.png` | **Generado** | `docs/figuras/arquitectura-pec2.png` |
