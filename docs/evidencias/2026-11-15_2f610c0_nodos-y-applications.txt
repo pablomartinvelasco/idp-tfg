@@ -1,0 +1,12 @@
+# revision-git=2f610c0 fecha=2026-11-15
+NAME STATUS ROLES VERSION INTERNAL-IP
+idp-lab-control-plane Ready control-plane v1.35.0 172.18.0.2
+NAME                   PROJECT    SYNC     HEALTH
+backstage              platform   Synced   Healthy
+env-namespaces         platform   Synced   Healthy
+root                   platform   Synced   Healthy
+svc-catalogo-dev       services   Synced   Healthy
+svc-catalogo-staging   services   Synced   Healthy
+svc-pedidos-dev        services   Synced   Healthy
+svc-pedidos-staging    services   Synced   Healthy
+traefik                platform   Synced   Healthy

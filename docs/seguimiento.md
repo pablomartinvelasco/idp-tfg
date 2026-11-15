@@ -14,7 +14,7 @@ a `origin/main` (`bff74c8`, PR #3 de S7). Cambios fusionados en `main` por los P
 | Clúster, Argo CD, Traefik, namespaces (O2, O3) | Terraform (`kind_cluster.lab`, `helm_release.argocd`, `helm_release.argocd_apps`) + Argo CD | Nodo `Ready` (v1.35.0); 7 Applications `Synced`, 6 `Healthy` | — |
 | Servicios de ejemplo (O3) | `svc-catalogo`, `svc-pedidos` en dev (1 réplica) y staging (2) | 4 Applications `Synced`/`Healthy`; 6 pods `Running`; PA-03/04/05/13 superadas (12/10) | — |
 | Portal Backstage (O4, S7) | `portal/`, imagen `639714d`, `gitops/platform/backstage` | Inicialmente no operativo (falta `backstage-secrets`); tras `make secrets`: pods listos, `make verify` completo OK, login con GitHub y catálogo funcionando | — |
-| Acceso a Kubernetes desde el portal (RF-05, S8) | `rbac.yaml` (ServiceAccount + ClusterRole de solo lectura), `kubernetes:` en `app-config.production.yaml`, ADR-0009, comprobaciones en `make check`/`make verify` | Pestaña Kubernetes con pods, Deployments, Services e Ingress reales; permisos mínimos comprobados con `make verify`. **PA-07 superada** (15/11/2026) | Enlace a la Application de Argo CD (plugin o enlace) |
+| Acceso a Kubernetes desde el portal (RF-05, S8) | `rbac.yaml` (ServiceAccount + ClusterRole de solo lectura), `kubernetes:` en `app-config.production.yaml`, ADR-0009, comprobaciones en `make check`/`make verify` | Pestaña Kubernetes con pods, Deployments, Services e Ingress reales; permisos mínimos comprobados con `make verify`. **PA-07 superada** (15/11/2026) | — (enlaces a Argo CD añadidos en los `catalog-info.yaml`) |
 | Catálogo (RF-01) | `catalog/*.yaml` + `catalog-info.yaml` de cada servicio (anotaciones, enlaces, propietario, TechDocs) | Metadatos revisados en origen; **PA-06 superada** (15/11/2026) | Añadir enlace a la Application de Argo CD en los `catalog-info.yaml` de los repos de servicio (requiere push a esos repos) |
 | Justificación de ingeniería | `docs/ingenieria.md`, ADR-0008, ADR-0009 | Documentación; sin medidas | Comparación cuantitativa con Port solo si se necesita |
 | Metodología DX | `docs/metodologia-dx.md`, `scripts/dx-medir.sh`, `scripts/dx-analisis.sh` | Análisis probado con datos sintéticos desechados; **0 mediciones reales** | Ejecutar tras S9 y S10 |
@@ -22,7 +22,7 @@ a `origin/main` (`bff74c8`, PR #3 de S7). Cambios fusionados en `main` por los P
 
 ## Próximos pasos
 
-1. Enlazar cada ficha con su Application de Argo CD (requiere push a los repos `svc-*`, no hecho).
+1. Capturar la interfaz de Argo CD con las 4 aplicaciones (requiere iniciar sesión el autor; el navegador automatizado no abre `argocd.localtest.me`).
 2. S9: plantilla Scaffolder (PA-08); S10: Prometheus/Grafana (PA-09); S11: permisos por perfil (PA-11).
 3. Ejecutar `make down && make up && make verify` para PA-12 y repetir PA-01/02 con el flujo completo.
 4. Experimento DX (`docs/metodologia-dx.md`) cuando existan plantilla y observabilidad.
@@ -92,3 +92,5 @@ Localizadas en la inspección inicial (12/10/2026):
 | 15/11/2026 | Pestaña Kubernetes: «Permission required» con el backend autorizando | `crypto.randomUUID` no existe en contextos HTTP no seguros (`portal.localtest.me`); la comprobación de permisos del frontend fallaba antes de enviarse | Polyfill en `portal/packages/app/src/randomUuidPolyfill.ts` (imagen `5de35b7`) |
 | 15/11/2026 | `make verify`: «NO puede leer logs» fallaba | `kubectl auth can-i get pods/log` trata `log` como nombre de pod | Se usa `--subresource=log` / `exec` |
 | 15/11/2026 | Un `git add -A` incluyó los worktrees de `.claude/` como enlaces en un commit de rama | `.claude/` sin ignorar | Retirados en un commit posterior y `.claude/worktrees/` añadido a `.gitignore`; sin contenido expuesto |
+| 15/11/2026 | `make verify` fallaba en intermitencia: Applications `Unknown`, ApplicationSet con error y Argo CD sin responder | (1) CoreDNS no resolvía `github.com` durante unos minutos (`i/o timeout` contra el resolvedor del host), con la consiguiente imposibilidad de Argo CD de leer Git; (2) el pod `argocd-server` dejó de ser alcanzable desde otros pods (Traefik) aunque seguía sano. La causa raíz de ambos no está determinada | Se recuperaron solos (1) o recreando el pod `argocd-server` (2); se forzó el refresco de las Applications. `make verify` 69/69 después. A vigilar en PA-12 |
+| 15/11/2026 | El test E2E fallaba | Aserción sobre un texto inexistente | Corregida (ver `docs/pruebas.md`) |
