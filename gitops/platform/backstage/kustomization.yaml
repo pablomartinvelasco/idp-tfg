@@ -15,4 +15,4 @@ resources:
 images:
   # Imagen construida por .github/workflows/portal.yaml; etiqueta = SHA del commit de idp-tfg.
   - name: ghcr.io/pablomartinvelasco/idp-tfg/portal
-    newTag: b5f853d449416237d0188aa013b9b4a2d25393f8
+    newTag: 5de35b7dbbf87c8b0c1415d8a85b8ddc170cdbfb
