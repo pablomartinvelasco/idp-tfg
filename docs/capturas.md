@@ -12,6 +12,6 @@ vista muestra un usuario, usar solo el nombre público de GitHub.
 | 4 | Endpoints de los servicios | `curl` a `/` de las 4 URLs | Pendiente (hacerlo con `make verify` en verde) | — |
 | 5 | Catálogo con 2 servicios | Portal → Catálogo | **Capturada** | `2026-11-15_bff74c8_pa06_catalogo-lista.png`, `…_ficha-svc-catalogo.png`, `…_ficha-svc-pedidos.png` |
 | 6 | TechDocs de ambos servicios | Portal → Docs | **Capturada** | `…_pa06_techdocs-svc-catalogo.png`, `…_techdocs-svc-pedidos.png` |
-| 7 | Vista Kubernetes de un servicio | Ficha → pestaña Kubernetes | **Pendiente**: requiere portal y nueva imagen | — |
-| 8 | Salida de `make verify` completa | `make verify` | Pendiente (con el portal sano) | — |
+| 7 | Vista Kubernetes de un servicio | Ficha → pestaña Kubernetes | **Capturada** | `2026-11-15_f3ac349_pa07_kubernetes-svc-catalogo.jpg`, `…_svc-pedidos.jpg` |
+| 8 | Salida de `make verify` completa | `make verify` | 0 fallos a 15/11/2026 (salida no archivada en fichero) | — |
 | 9 | Matriz de pruebas | `docs/pruebas.md` | Disponible (actualizada) | — |
