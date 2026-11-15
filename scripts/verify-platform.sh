@@ -88,8 +88,8 @@ check "puede listar pods de apps-dev" equals yes can list pods -n apps-dev
 check "puede listar pods de apps-staging" equals yes can list pods -n apps-staging
 check "puede leer deployments de apps-dev" equals yes can get deployments.apps -n apps-dev
 check "NO puede leer Secrets" equals no can get secrets -n apps-dev
-check "NO puede leer logs de pods" equals no can get pods/log -n apps-dev
-check "NO puede ejecutar comandos en pods" equals no can create pods/exec -n apps-dev
+check "NO puede leer logs de pods" equals no can get pods --subresource=log -n apps-dev
+check "NO puede ejecutar comandos en pods" equals no can create pods --subresource=exec -n apps-dev
 check "NO puede crear ni borrar pods" equals no can delete pods -n apps-dev
 check "NO puede modificar deployments" equals no can patch deployments.apps -n apps-staging
 check "NO es administrador del clúster" equals no can '*' '*'
