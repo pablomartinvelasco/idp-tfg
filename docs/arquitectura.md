@@ -300,6 +300,6 @@ que los servicios expongan `/metrics` (S6).
 
 - Verificado con `make verify` (0 fallos): clúster, Argo CD, Traefik, namespaces, los 4 servicios,
   el portal (login con GitHub, sin invitado) y los permisos de solo lectura de su ServiceAccount.
-- PA-06 y PA-07 superadas desde el portal (`docs/pruebas.md`).
+- PA-06 y PA-07 superadas desde el portal y PA-10 (sin credenciales en Git) superada; 9 de 14 pruebas y 7 de 11 críticas (`docs/pruebas.md`).
 - Pendiente: permisos por perfil (hoy *allow-all*), enlace a Argo CD, plantilla, observabilidad.
 - Justificación y fuentes de verdad en [ingenieria.md](ingenieria.md).

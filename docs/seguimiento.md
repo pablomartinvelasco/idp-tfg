@@ -6,7 +6,7 @@ detallan en `docs/adr/`.
 
 ## Estado actual (15/11/2026, revisión `f3ac349`)
 
-**PEC2 — S7 y S8 cerradas; PA-06 y PA-07 superadas.** `main` local se avanzó (fast-forward)
+**PEC2 — S7 y S8 cerradas; PA-06, PA-07 y PA-10 superadas (9/14 pruebas; 7/11 críticas).** `main` local se avanzó (fast-forward)
 a `origin/main` (`bff74c8`, PR #3 de S7). Cambios fusionados en `main` por los PR #4 y #5.
 
 | Bloque | Implementado | Verificado (15/11/2026) | Pendiente |
@@ -18,6 +18,7 @@ a `origin/main` (`bff74c8`, PR #3 de S7). Cambios fusionados en `main` por los P
 | Catálogo (RF-01) | `catalog/*.yaml` + `catalog-info.yaml` de cada servicio (anotaciones, enlaces, propietario, TechDocs) | Metadatos revisados en origen; **PA-06 superada** (15/11/2026) | Añadir enlace a la Application de Argo CD en los `catalog-info.yaml` de los repos de servicio (requiere push a esos repos) |
 | Justificación de ingeniería | `docs/ingenieria.md`, ADR-0008, ADR-0009 | Documentación; sin medidas | Comparación cuantitativa con Port solo si se necesita |
 | Metodología DX | `docs/metodologia-dx.md`, `scripts/dx-medir.sh`, `scripts/dx-analisis.sh` | Análisis probado con datos sintéticos desechados; **0 mediciones reales** | Ejecutar tras S9 y S10 |
+| Memoria PEC2 | `Martín_Velasco_Pablo_TFG_PEC2.docx` con el formato de la PEC1 (ver `docs/figuras/`) | Contenido contrastado con `docs/pruebas.md` y `docs/evidencias/` | Revisión final del autor |
 | Capturas | `docs/capturas.md`, `docs/evidencias/` | 3 capturas de texto seguras | Catálogo, TechDocs y vista Kubernetes tras desbloquear el portal |
 
 ## Próximos pasos
