@@ -1,0 +1,82 @@
+# revision-git=2f610c0 fecha=2026-11-15
+==> Clúster 'idp-lab' (contexto kind-idp-lab)
+  OK    el clúster kind existe
+  OK    kubeconfig aislado presente con permisos 600
+  OK    API server responde a /readyz
+  OK    todos los nodos en estado Ready
+  OK    nodo con etiqueta ingress-ready=true
+  OK    pods de kube-system listos
+  OK    CoreDNS disponible
+  OK    versión del nodo = v1.35.0
+==> Namespaces de entorno
+  OK    apps-dev existe con idp.tfg/environment=dev
+  OK    apps-dev tiene ResourceQuota y LimitRange
+  OK    apps-staging existe con idp.tfg/environment=staging
+  OK    apps-staging tiene ResourceQuota y LimitRange
+==> Prueba de humo: pod efímero en apps-dev con resolución DNS interna
+  OK    pod programado, imagen descargada y DNS del clúster resuelto
+==> Laboratorio verificado.
+==> Argo CD (namespace argocd)
+  OK    Deployments disponibles
+  OK    application-controller listo
+  OK    AppProject platform existe
+  OK    AppProject services limitado a apps-dev/apps-staging
+  OK    AppProject services sin recursos de ámbito de clúster
+  OK    Application raíz sincroniza main
+==> Applications de plataforma (gitops/platform/apps)
+  OK    root: Synced
+  OK    root: Healthy
+  OK    env-namespaces: Synced
+  OK    env-namespaces: Healthy
+  OK    traefik: Synced
+  OK    traefik: Healthy
+==> Namespaces de entorno gestionados por Argo CD
+  OK    apps-dev adoptado por la Application env-namespaces
+  OK    apps-staging adoptado por la Application env-namespaces
+==> Ingress (Traefik)
+  OK    Traefik disponible
+  OK    Traefik en el nodo ingress-ready
+  OK    IngressClass traefik por defecto
+  OK    Ingress de Argo CD publicado en 127.0.0.1
+  OK    http://argocd.localtest.me responde con la interfaz de Argo CD
+  OK    argocd.localtest.me resuelve a 127.0.0.1
+==> Portal (Backstage)
+  OK    backstage: Synced
+  OK    backstage: Healthy
+  OK    namespace backstage con Pod Security restricted
+  OK    PostgreSQL listo
+  OK    portal.localtest.me sirve el frontend (Portal IDP)
+  OK    readiness del backend a través de Traefik
+  OK    API del catálogo sin identidad → 401
+  OK    proveedor GitHub activo (redirección a GitHub)
+  OK    sin proveedor invitado
+==> Portal → Kubernetes (solo lectura, ADR-0009)
+  OK    ServiceAccount backstage existe
+  OK    puede listar pods de apps-dev
+  OK    puede listar pods de apps-staging
+  OK    puede leer deployments de apps-dev
+  OK    NO puede leer Secrets
+  OK    NO puede leer logs de pods
+  OK    NO puede ejecutar comandos en pods
+  OK    NO puede crear ni borrar pods
+  OK    NO puede modificar deployments
+  OK    NO es administrador del clúster
+==> Servicios (ApplicationSet services, gitops/apps)
+  OK    ApplicationSet services existe
+  OK    svc-catalogo-dev: Synced
+  OK    svc-catalogo-dev: Healthy
+  OK    svc-catalogo-dev: http://svc-catalogo.dev.localtest.me/ informa entorno dev y versión 70363c4
+  OK    svc-catalogo-dev: /metrics publica app_build_info del entorno y la versión
+  OK    svc-catalogo-staging: Synced
+  OK    svc-catalogo-staging: Healthy
+  OK    svc-catalogo-staging: http://svc-catalogo.staging.localtest.me/ informa entorno staging y versión 70363c4
+  OK    svc-catalogo-staging: /metrics publica app_build_info del entorno y la versión
+  OK    svc-pedidos-dev: Synced
+  OK    svc-pedidos-dev: Healthy
+  OK    svc-pedidos-dev: http://svc-pedidos.dev.localtest.me/ informa entorno dev y versión 38196b8
+  OK    svc-pedidos-dev: /metrics publica app_build_info del entorno y la versión
+  OK    svc-pedidos-staging: Synced
+  OK    svc-pedidos-staging: Healthy
+  OK    svc-pedidos-staging: http://svc-pedidos.staging.localtest.me/ informa entorno staging y versión 38196b8
+  OK    svc-pedidos-staging: /metrics publica app_build_info del entorno y la versión
+==> Plataforma GitOps verificada.

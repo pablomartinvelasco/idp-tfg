@@ -1,0 +1,5 @@
+# revision-git=2f610c0 fecha=2026-11-15
+GET http://svc-catalogo.dev.localtest.me/ -> {"entorno":"dev","servicio":"svc-catalogo","version":"70363c4cd0e76fdea1272e22e5aff79bd9a32361"}
+GET http://svc-catalogo.staging.localtest.me/ -> {"entorno":"staging","servicio":"svc-catalogo","version":"70363c4cd0e76fdea1272e22e5aff79bd9a32361"}
+GET http://svc-pedidos.dev.localtest.me/ -> {"entorno":"dev","servicio":"svc-pedidos","version":"38196b831786108b0746df75020e47b7cd80e09c"}
+GET http://svc-pedidos.staging.localtest.me/ -> {"entorno":"staging","servicio":"svc-pedidos","version":"38196b831786108b0746df75020e47b7cd80e09c"}
