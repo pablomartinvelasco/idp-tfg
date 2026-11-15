@@ -9,6 +9,7 @@ labels:
       app.kubernetes.io/part-of: idp-plataforma
     includeTemplates: true
 resources:
+  - rbac.yaml
   - postgres.yaml
   - backstage.yaml
 images:

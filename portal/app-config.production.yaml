@@ -45,3 +45,20 @@ catalog:
     # CATALOG_GIT_REVISION la fija el Deployment (main; otra rama solo para probar cambios).
     - type: url
       target: https://github.com/pablomartinvelasco/idp-tfg/blob/${CATALOG_GIT_REVISION}/catalog/all.yaml
+
+# Plugin de Kubernetes (RF-05, PA-07; ADR-0008). Un único clúster: el propio donde corre el portal.
+# authProvider serviceAccount sin serviceAccountToken: el backend usa el token y la CA que el
+# kubelet monta en el pod (ServiceAccount "backstage", solo lectura). No hay token en Git.
+kubernetes:
+  serviceLocatorMethod:
+    type: multiTenant
+  clusterLocatorMethods:
+    - type: config
+      clusters:
+        - name: idp-lab
+          url: https://kubernetes.default.svc
+          authProvider: serviceAccount
+          skipTLSVerify: false
+          skipMetricsLookup: true
+  # Solo los tipos que cubre el ClusterRole backstage-kubernetes-reader.
+  objectTypes: [pods, services, deployments, replicasets, ingresses]

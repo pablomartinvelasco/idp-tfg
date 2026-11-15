@@ -1,0 +1,47 @@
+# Acceso de solo lectura del portal a Kubernetes (RF-05, PA-07; ADR-0008).
+# El plugin de Kubernetes de Backstage usa el token de esta ServiceAccount (authProvider
+# serviceAccount, sin token en Git ni en el Secret): el kubelet lo proyecta en el pod.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+automountServiceAccountToken: false
+---
+# Sin la anotación backstage.io/kubernetes-namespace el plugin consulta cada tipo de objeto en
+# todo el clúster filtrando por la etiqueta backstage.io/kubernetes-id; un Role por namespace
+# daría 403 en esa consulta. Se limita por tipo y por verbo: solo get/list/watch de los cinco
+# tipos mostrados en la ficha (kubernetes.objectTypes). Sin Secrets, ConfigMaps, logs, exec ni
+# escritura.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backstage-kubernetes-reader
+  labels:
+    app.kubernetes.io/name: backstage
+rules:
+  - apiGroups: [""]
+    resources: [pods, services]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backstage-kubernetes-reader
+  labels:
+    app.kubernetes.io/name: backstage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: backstage-kubernetes-reader
+subjects:
+  - kind: ServiceAccount
+    name: backstage
+    namespace: backstage

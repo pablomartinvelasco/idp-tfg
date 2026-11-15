@@ -1,0 +1,10 @@
+# revision-git=bff74c8 fecha=2026-11-15
+NAME                   PROJECT    SYNC     HEALTH     REVISION
+backstage              platform   Synced   Degraded   bff74c86e3a160c1d8c0deca28423a4099154d6d
+env-namespaces         platform   Synced   Healthy    bff74c86e3a160c1d8c0deca28423a4099154d6d
+root                   platform   Synced   Healthy    bff74c86e3a160c1d8c0deca28423a4099154d6d
+svc-catalogo-dev       services   Synced   Healthy    bff74c86e3a160c1d8c0deca28423a4099154d6d
+svc-catalogo-staging   services   Synced   Healthy    bff74c86e3a160c1d8c0deca28423a4099154d6d
+svc-pedidos-dev        services   Synced   Healthy    bff74c86e3a160c1d8c0deca28423a4099154d6d
+svc-pedidos-staging    services   Synced   Healthy    bff74c86e3a160c1d8c0deca28423a4099154d6d
+traefik                platform   Synced   Healthy    41.7.1

@@ -1,0 +1,6 @@
+# revision-git=bff74c8 fecha=2026-11-15
+## infra/terraform/cluster
+kind_cluster.lab
+## infra/terraform/bootstrap
+helm_release.argocd
+helm_release.argocd_apps

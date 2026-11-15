@@ -42,6 +42,11 @@ log "Portal (gitops/platform/backstage)"
 run "imagen del portal fijada por SHA de commit (40 hex)" \
   grep -qE '^ *newTag: *[0-9a-f]{40} *$' "${REPO_ROOT}/gitops/platform/backstage/kustomization.yaml"
 
+run "RBAC del portal: solo get/list/watch" bash -c \
+  "! grep -nE '(create|update|patch|delete|deletecollection|\\*)' '${REPO_ROOT}/gitops/platform/backstage/rbac.yaml' | grep -E 'verbs:'"
+run "RBAC del portal: sin Secrets ni cluster-admin" bash -c \
+  "! grep -nEi 'secrets|cluster-admin|pods/(log|exec)' '${REPO_ROOT}/gitops/platform/backstage/rbac.yaml' | grep -vE '^[0-9]+: *#'"
+
 log "Versiones (versions.env como fuente única)"
 traefik_app="${REPO_ROOT}/gitops/platform/apps/traefik.yaml"
 run "chart de Traefik en GitOps = TRAEFIK_CHART_VERSION (${TRAEFIK_CHART_VERSION})" \

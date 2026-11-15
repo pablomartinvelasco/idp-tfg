@@ -80,6 +80,20 @@ check "API del catálogo sin identidad → 401" equals 401 pcode /api/catalog/en
 check "proveedor GitHub activo (redirección a GitHub)" equals 302 pcode '/api/auth/github/start?env=production'
 check "sin proveedor invitado" equals 404 pcode '/api/auth/guest/refresh?env=production'
 
+log "Portal → Kubernetes (solo lectura, ADR-0009)"
+sa="system:serviceaccount:backstage:backstage"
+can() { kc auth can-i "$@" --as "${sa}" 2>/dev/null || true; }
+check "ServiceAccount backstage existe" kc get serviceaccount/backstage -n backstage
+check "puede listar pods de apps-dev" equals yes can list pods -n apps-dev
+check "puede listar pods de apps-staging" equals yes can list pods -n apps-staging
+check "puede leer deployments de apps-dev" equals yes can get deployments.apps -n apps-dev
+check "NO puede leer Secrets" equals no can get secrets -n apps-dev
+check "NO puede leer logs de pods" equals no can get pods/log -n apps-dev
+check "NO puede ejecutar comandos en pods" equals no can create pods/exec -n apps-dev
+check "NO puede crear ni borrar pods" equals no can delete pods -n apps-dev
+check "NO puede modificar deployments" equals no can patch deployments.apps -n apps-staging
+check "NO es administrador del clúster" equals no can '*' '*'
+
 log "Servicios (ApplicationSet services, gitops/apps)"
 check "ApplicationSet services existe" kc get applicationset/services -n argocd
 shopt -s nullglob
